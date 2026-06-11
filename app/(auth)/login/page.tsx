@@ -1,11 +1,9 @@
-﻿// app/login/page.tsx
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, ArrowRight, Lock, Mail } from "lucide-react";
 import { KlaxonMark } from "@/components/layout/klaxon-mark";
-import { useAuthStore } from "@/lib/auth-store";
 
 const DEMO_ACCOUNTS = [
   { role: "Super Admin",    email: "admin@klaxon.health",     password: "Admin@123" },
@@ -17,37 +15,30 @@ const DEMO_ACCOUNTS = [
 ];
 
 export default function LoginPage() {
-  const router    = useRouter();
-  const login     = useAuthStore((s) => s.login);
-  const isLoading = useAuthStore((s) => s.isLoading);
+  const router = useRouter();
 
   const [email,    setEmail]    = useState("admin@klaxon.health");
   const [password, setPassword] = useState("Admin@123");
   const [showPwd,  setShowPwd]  = useState(false);
+  const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    try {
-      const destination = await login(email, password);
-      router.push(destination);
-    } catch (err: unknown) {
-      const serverMsg = (err as { response?: { data?: { message?: string } } })
-        ?.response?.data?.message;
-      if (serverMsg) {
-        setError(serverMsg);
-        return;
-      }
-      const valid = DEMO_ACCOUNTS.find(
-        (a) => a.email === email && a.password === password
-      );
-      if (!valid) {
-        setError("Invalid credentials. Use a demo account on the left.");
-        return;
-      }
-      router.push("/dashboard");
+
+    const valid = DEMO_ACCOUNTS.find(
+      (a) => a.email === email && a.password === password
+    );
+
+    if (!valid) {
+      setError("Invalid credentials. Use a demo account on the left.");
+      return;
     }
+
+    setLoading(true);
+    await new Promise((r) => setTimeout(r, 800));
+    router.push("/dashboard");
   };
 
   const fillAccount = (acc: (typeof DEMO_ACCOUNTS)[number]) => {
@@ -179,8 +170,8 @@ export default function LoginPage() {
               </a>
             </div>
 
-            <button type="submit" disabled={isLoading} className="btn-primary btn-lg" style={{ marginTop: 4, justifyContent: "center" }}>
-              {isLoading ? (
+            <button type="submit" disabled={loading} className="btn-primary btn-lg" style={{ marginTop: 4, justifyContent: "center" }}>
+              {loading ? (
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(7,8,10,0.3)", borderTopColor: "#07080a", animation: "spin 0.6s linear infinite", display: "inline-block" }} />
                   Signing in...
