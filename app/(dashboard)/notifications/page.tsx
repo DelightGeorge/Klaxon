@@ -1,6 +1,6 @@
 "use client";
 import { PageHeader } from "@/components/ui/page-header";
-import { Bell, Package, Truck, AlertTriangle, CheckCircle2, FileText } from "lucide-react";
+import { Package, Truck, AlertTriangle, CheckCircle2, FileText } from "lucide-react";
 
 const NOTIFS = [
   {icon:AlertTriangle,color:"#f43f5e",title:"Low Stock Alert",desc:"Paracetamol 500mg — Lagos Central Warehouse below reorder level (120 units remaining)",time:"2 min ago",read:false},

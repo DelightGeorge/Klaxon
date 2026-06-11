@@ -31,7 +31,7 @@ export default function GtinManagerPage() {
     <div>
       <PageHeader title="GTIN Manager" subtitle="Global Trade Item Numbers for all products"
         action={<button className="btn-primary btn-sm"><Plus className="w-3.5 h-3.5"/>Assign GTIN</button>} />
-      <DataTable columns={cols} data={MOCK_PRODUCTS as unknown as Record<string,unknown>[]} searchKeys={["name","gtin","sku"] as never} />
+      <DataTable columns={cols} data={MOCK_PRODUCTS} searchKeys={["name","gtin","sku"] as (keyof P)[]} />
     </div>
   );
 }

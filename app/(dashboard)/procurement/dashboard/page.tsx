@@ -3,10 +3,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { DataTable, type Col } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { MOCK_RFQ, MOCK_SUPPLIERS } from "@/lib/mock-data";
+import { MOCK_RFQ } from "@/lib/mock-data";
 import { ShoppingCart, FileText, CheckCircle2, Clock } from "lucide-react";
 
 type RFQ = typeof MOCK_RFQ[0];
+
 const cols: Col<RFQ>[] = [
   { key:"id", header:"RFQ ID", render:r=><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:"var(--k)"}}>{r.id}</span> },
   { key:"product", header:"Product" },
@@ -28,7 +29,7 @@ export default function ProcurementDashboardPage() {
         <KpiCard label="Completed (MTD)" value="142" icon={<CheckCircle2 className="w-4 h-4"/>} color="#22c55e" />
       </div>
       <p style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:14,marginBottom:12}}>Recent RFQs</p>
-      <DataTable columns={cols} data={MOCK_RFQ as unknown as Record<string,unknown>[]} />
+      <DataTable columns={cols} data={MOCK_RFQ} />
     </div>
   );
 }

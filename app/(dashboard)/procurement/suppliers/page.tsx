@@ -43,7 +43,7 @@ export default function SuppliersPage() {
     <div>
       <PageHeader title="Suppliers" subtitle="Manage your pharmaceutical supplier relationships"
         action={<button className="btn-primary btn-sm">+ Add Supplier</button>} />
-      <DataTable columns={columns} data={MOCK_SUPPLIERS as unknown as Record<string,unknown>[]} searchKeys={["name","country","category"] as never} />
+      <DataTable columns={columns} data={MOCK_SUPPLIERS} searchKeys={["name","country","category"] as (keyof Supplier)[]} />
     </div>
   );
 }

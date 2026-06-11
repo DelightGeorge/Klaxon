@@ -35,9 +35,16 @@ const cols: Col<User>[] = [
 export default function AdminUsersPage() {
   return (
     <div>
-      <PageHeader title="User Management" subtitle={`${MOCK_USERS.length} platform users`}
-        action={<button className="btn-primary btn-sm"><UserPlus className="w-3.5 h-3.5"/>Invite User</button>} />
-      <DataTable columns={cols} data={MOCK_USERS as unknown as Record<string,unknown>[]} searchKeys={["name","email","role","org"] as never} />
+      <PageHeader 
+        title="User Management" 
+        subtitle={`${MOCK_USERS.length} platform users`}
+        action={<button className="btn-primary btn-sm"><UserPlus className="w-3.5 h-3.5"/>Invite User</button>} 
+      />
+      <DataTable 
+        columns={cols} 
+        data={MOCK_USERS} 
+        searchKeys={["name", "email", "role", "org"] as (keyof User)[]} 
+      />
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function OrdersPage() {
           </button>
         ))}
       </div>
-      <DataTable columns={columns} data={filtered as unknown as Record<string,unknown>[]} searchKeys={["id","customer","logistics"] as never} />
+      <DataTable columns={columns} data={filtered} searchKeys={["id","customer","logistics"] as (keyof Order)[]} />
     </div>
   );
 }

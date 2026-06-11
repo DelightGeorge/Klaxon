@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MOCK_AUDIT } from "@/lib/mock-data";
-import { ShieldCheck, AlertTriangle, FileText, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, AlertTriangle, FileText } from "lucide-react";
 
 export default function ComplianceDashboardPage() {
   const critical = MOCK_AUDIT.filter(l => l.severity === "critical");

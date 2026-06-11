@@ -27,7 +27,7 @@ export default function PrescriptionsPage() {
     <div>
       <PageHeader title="E-Prescriptions" subtitle="Digital prescription routing and fulfillment tracking"
         action={<button className="btn-primary btn-sm">+ New Prescription</button>} />
-      <DataTable columns={cols} data={MOCK_PRESCRIPTIONS as unknown as Record<string,unknown>[]} searchKeys={["patient","doctor","pharmacy"] as never} />
+      <DataTable columns={cols} data={MOCK_PRESCRIPTIONS} searchKeys={["patient","doctor","pharmacy"] as (keyof Rx)[]} />
     </div>
   );
 }

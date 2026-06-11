@@ -5,6 +5,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { MOCK_PRODUCTS } from "@/lib/mock-data";
 
 type P = typeof MOCK_PRODUCTS[0];
+
 const cols: Col<P>[] = [
   {key:"batch",header:"Batch No.",render:r=><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:"var(--k)"}}>{r.batch}</span>},
   {key:"name",header:"Product"},
@@ -19,7 +20,7 @@ export default function BatchesPage() {
   return (
     <div>
       <PageHeader title="Batch Tracking" subtitle="Monitor all drug batches and expiry dates" />
-      <DataTable columns={cols} data={MOCK_PRODUCTS as unknown as Record<string,unknown>[]} searchKeys={["batch","name","supplier"] as never} />
+      <DataTable columns={cols} data={MOCK_PRODUCTS} searchKeys={["batch","name","supplier"] as (keyof P)[]} />
     </div>
   );
 }

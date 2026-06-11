@@ -19,9 +19,17 @@ const cols: Col<Log>[] = [
 export default function AuditPage() {
   return (
     <div>
-      <PageHeader title="Audit Logs" subtitle="Complete activity trail for compliance and security"
-        action={<button className="btn-secondary btn-sm"><Download className="w-3.5 h-3.5"/>Export Logs</button>} />
-      <DataTable columns={cols} data={MOCK_AUDIT as unknown as Record<string,unknown>[]} searchKeys={["action","user","resource"] as never} pageSize={15} />
+      <PageHeader 
+        title="Audit Logs" 
+        subtitle="Complete activity trail for compliance and security"
+        action={<button className="btn-secondary btn-sm"><Download className="w-3.5 h-3.5"/>Export Logs</button>} 
+      />
+      <DataTable 
+        columns={cols} 
+        data={MOCK_AUDIT} 
+        searchKeys={["action", "user", "resource"] as (keyof Log)[]} 
+        pageSize={15} 
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { MOCK_ORDERS } from "@/lib/mock-data";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MapPin, Package, Truck, CheckCircle2 } from "lucide-react";
 
-const STEPS = ["Order Placed","Processing","Dispatched","In Transit","Delivered"];
+// const STEPS = ["Order Placed","Processing","Dispatched","In Transit","Delivered"];
 
 export default function TrackingPage() {
   const active = MOCK_ORDERS.filter(o => ["Processing","Dispatched"].includes(o.status)).slice(0,6);

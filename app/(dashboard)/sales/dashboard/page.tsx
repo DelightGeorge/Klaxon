@@ -23,7 +23,7 @@ export default function SalesDashboardPage() {
             <BarChart data={MOCK_SALES}>
               <XAxis dataKey="month" tick={{fontSize:10,fill:"var(--tx-3)",fontFamily:"'DM Mono',monospace"}} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip formatter={(v: number) => [`₦${v}M`,"Revenue"]} contentStyle={{background:"var(--bg-overlay)",border:"1px solid var(--bd-2)",borderRadius:10,fontSize:12}} />
+              <Tooltip formatter={(v) => [`₦${v}M`,"Revenue"]} contentStyle={{background:"var(--bg-overlay)",border:"1px solid var(--bd-2)",borderRadius:10,fontSize:12}} />
               <Bar dataKey="revenue" fill="#14b88e" radius={[4,4,0,0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -36,7 +36,7 @@ export default function SalesDashboardPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="var(--bd-1)" />
               <XAxis dataKey="month" tick={{fontSize:10,fill:"var(--tx-3)",fontFamily:"'DM Mono',monospace"}} axisLine={false} tickLine={false} />
               <YAxis hide />
-              <Tooltip formatter={(v: number) => [v,"Orders"]} contentStyle={{background:"var(--bg-overlay)",border:"1px solid var(--bd-2)",borderRadius:10,fontSize:12}} />
+              <Tooltip formatter={(v) => [v,"Orders"]} contentStyle={{background:"var(--bg-overlay)",border:"1px solid var(--bd-2)",borderRadius:10,fontSize:12}} />
               <Line type="monotone" dataKey="orders" stroke="#3b82f6" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>

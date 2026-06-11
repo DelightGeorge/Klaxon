@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Package, QrCode, ShoppingCart, Truck,
   BarChart3, Video, Store, ShieldCheck, FileText,
   Code2, Settings, Users, ChevronDown, ChevronRight,
-  Zap, Bell, PanelLeftClose, PanelLeft,
+  Zap, PanelLeftClose, PanelLeft,
 } from "lucide-react";
 
 const NAV = [

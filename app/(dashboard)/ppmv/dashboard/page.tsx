@@ -33,7 +33,7 @@ export default function PPMVDashboardPage() {
         <KpiCard label="Active Today" value="9,240" icon={<Package className="w-4 h-4"/>} color="#3b82f6" />
         <KpiCard label="Low Stock" value={MOCK_KPI.lowStock} icon={<MapPin className="w-4 h-4"/>} color="#f59e0b" />
       </div>
-      <DataTable columns={cols} data={MOCK_PPMV as unknown as Record<string,unknown>[]} searchKeys={["name","location"] as never} />
+      <DataTable columns={cols} data={MOCK_PPMV} searchKeys={["name","location"] as (keyof PPMV)[]} />
     </div>
   );
 }
