@@ -1,21 +1,26 @@
-// components/layout/shell.tsx
+// components/layout/app-shell.tsx
 "use client";
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
-interface ShellProps {
+interface AppShellProps {
   children: React.ReactNode;
 }
 
-export function Shell({ children }: ShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-root)" }}>
+      {/* Sidebar manages its own collapse state and notifies us */}
       <Sidebar onCollapsedChange={setCollapsed} />
+
+      {/* Topbar shifts with the sidebar */}
       <Topbar collapsed={collapsed} />
+
+      {/* Page content */}
       <main
         style={{
           flex: 1,
