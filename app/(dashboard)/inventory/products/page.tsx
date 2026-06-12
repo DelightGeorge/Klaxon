@@ -37,7 +37,7 @@ const columns: Col<Product>[] = [
   { key:"warehouse", header:"Warehouse" },
   { key:"price", header:"Unit Price", render:r=><span style={{fontFamily:"'DM Mono',monospace",fontSize:12}}>{r.price}</span> },
   { key:"status", header:"Status", render:r=><StatusBadge status={r.status??""} /> },
-  { key:"action", header:"", render:_r=>(
+  { key:"action", header:"", render:()=>(
     <div style={{display:"flex",gap:4}}>
       <button className="btn-secondary btn-sm" style={{padding:"4px 8px",fontSize:11}}>Edit</button>
       <button className="btn-secondary btn-sm" style={{padding:"4px 8px",fontSize:11}}>
