@@ -1,6 +1,6 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "https://klaxon-healthcare.onrender.com/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api/proxy";
 
 export const api = axios.create({
   baseURL: BASE_URL,
