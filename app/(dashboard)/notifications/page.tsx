@@ -1,44 +1,81 @@
 "use client";
 import { PageHeader } from "@/components/ui/page-header";
-import { Package, Truck, AlertTriangle, CheckCircle2, FileText } from "lucide-react";
-
-const NOTIFS = [
-  {icon:AlertTriangle,color:"#f43f5e",title:"Low Stock Alert",desc:"Paracetamol 500mg — Lagos Central Warehouse below reorder level (120 units remaining)",time:"2 min ago",read:false},
-  {icon:Truck,color:"#14b88e",title:"Order Dispatched",desc:"ORD-50021 dispatched via GIG Logistics. Estimated delivery: Tomorrow",time:"15 min ago",read:false},
-  {icon:Package,color:"#3b82f6",title:"Stock Received",desc:"500 units of Amoxicillin 250mg received at Abuja Hub from PharmaCorp Nigeria",time:"1 hr ago",read:false},
-  {icon:AlertTriangle,color:"#f59e0b",title:"Expiry Alert",desc:"3 batches of Artemether/Lumefantrine expiring within 30 days — action required",time:"2 hrs ago",read:true},
-  {icon:CheckCircle2,color:"#22c55e",title:"PO Approved",desc:"Purchase Order PO-20241201 has been approved. Supplier notified automatically",time:"3 hrs ago",read:true},
-  {icon:FileText,color:"#a855f7",title:"Prescription Routed",desc:"RX-2014 routed to CityPharm Lagos for dispensing",time:"4 hrs ago",read:true},
-  {icon:Truck,color:"#14b88e",title:"Delivery Completed",desc:"ORD-50019 delivered to Kano Pharma. Proof of delivery uploaded",time:"5 hrs ago",read:true},
-  {icon:AlertTriangle,color:"#f43f5e",title:"Batch Recall Notice",desc:"NAFDAC recall notice received for batch BCH-2024-047. Quarantine initiated",time:"Yesterday",read:true},
-];
+import { StatusBadge } from "@/components/ui/status-badge";
+import { useNotifications, useUnreadCount, useMarkAllRead } from "@/lib/hooks/use-notifications";
+import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function NotificationsPage() {
-  const unread = NOTIFS.filter(n => !n.read).length;
+  const { data, loading, refetch } = useNotifications();
+  const { data: countData }        = useUnreadCount();
+  const { mutate: markAll, loading: marking } = useMarkAllRead();
+
+  const notifications = data?.notifications ?? data?.data ?? [];
+  const unread = countData?.count ?? 0;
+
+  const handleMarkAll = async () => {
+    await markAll();
+    refetch();
+  };
+
+  const handleMarkOne = async (id: string) => {
+    await api.patch(`/notifications/${id}/read`);
+    refetch();
+  };
+
   return (
     <div>
-      <PageHeader title="Notifications" subtitle={`${unread} unread notifications`}
-        action={<button className="btn-secondary btn-sm">Mark all read</button>} />
-      <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        {NOTIFS.map((n, i) => (
-          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,padding:"14px 16px",borderRadius:12,background: n.read?"var(--bg-surface)":"var(--bg-raised)",border:`1px solid ${n.read?"var(--bd-1)":"var(--bd-2)"}`,transition:"all 0.15s",cursor:"pointer"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--bd-k)";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor=n.read?"var(--bd-1)":"var(--bd-2)";}}>
-            <div style={{width:36,height:36,borderRadius:10,background:`${n.color}15`,border:`1px solid ${n.color}25`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <n.icon className="w-4 h-4" style={{color:n.color}} />
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-                <p style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:13,color:"var(--tx-1)"}}>{n.title}</p>
-                <span style={{fontSize:10,color:"var(--tx-3)",fontFamily:"'DM Mono',monospace",flexShrink:0,marginLeft:12}}>{n.time}</span>
-              </div>
-              <p style={{fontSize:12,color:"var(--tx-2)",lineHeight:1.5}}>{n.desc}</p>
-            </div>
-            {!n.read && (
-              <div style={{width:6,height:6,borderRadius:"50%",background:"var(--k)",boxShadow:"0 0 6px var(--k)",flexShrink:0,marginTop:5}} />
-            )}
+      <PageHeader
+        title="Notifications"
+        subtitle={`${unread} unread notification${unread !== 1 ? "s" : ""}`}
+        action={
+          <button className="btn-secondary btn-sm" onClick={handleMarkAll} disabled={marking}>
+            {marking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCheck className="w-3.5 h-3.5" />}
+            Mark all read
+          </button>
+        }
+      />
+
+      <div className="card" style={{padding:0}}>
+        {loading ? (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:48}}>
+            <Loader2 style={{width:24,height:24,color:"var(--k)"}} className="animate-spin" />
           </div>
-        ))}
+        ) : notifications.length === 0 ? (
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:64,gap:12}}>
+            <Bell style={{width:32,height:32,color:"var(--tx-3)"}} />
+            <p style={{fontSize:13,color:"var(--tx-3)"}}>No notifications yet</p>
+          </div>
+        ) : (
+          notifications.map((n: {id:string;title?:string;message?:string;read?:boolean;createdAt?:string;type?:string}, i: number) => (
+            <div
+              key={n.id}
+              onClick={() => !n.read && handleMarkOne(n.id)}
+              style={{
+                display:"flex",alignItems:"flex-start",gap:12,
+                padding:"14px 16px",
+                borderBottom: i < notifications.length-1 ? "1px solid var(--bd-1)" : "none",
+                background: n.read ? "transparent" : "rgba(20,184,142,0.04)",
+                cursor: n.read ? "default" : "pointer",
+                transition:"background 0.15s",
+              }}
+            >
+              <div style={{
+                width:8,height:8,borderRadius:"50%",marginTop:5,flexShrink:0,
+                background: n.read ? "var(--tx-3)" : "var(--k)",
+                boxShadow: n.read ? "none" : "0 0 6px var(--k)",
+              }} />
+              <div style={{flex:1}}>
+                <p style={{fontSize:13,fontWeight:n.read?400:600,color:"var(--tx-1)"}}>{n.title ?? "Notification"}</p>
+                <p style={{fontSize:12,color:"var(--tx-2)",marginTop:2}}>{n.message}</p>
+                <p style={{fontSize:10,color:"var(--tx-3)",marginTop:4,fontFamily:"'DM Mono',monospace"}}>
+                  {n.createdAt ? new Date(n.createdAt).toLocaleString("en-GB") : ""}
+                </p>
+              </div>
+              {n.type && <StatusBadge status={n.type} />}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
