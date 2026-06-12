@@ -4,10 +4,10 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  LayoutDashboard, Package, QrCode, ShoppingCart, Truck,
-  TrendingUp, Stethoscope, Store, ShieldCheck, FileText,
+  LayoutDashboard, Package, QrCode, Truck,
+  TrendingUp, Stethoscope, Store, ShieldCheck,
   Code2, Settings, Users, ChevronLeft, ChevronRight,
-  ChevronDown, Warehouse, ClipboardList, BarChart2,
+  ChevronDown, ClipboardList, BarChart2,
 } from "lucide-react";
 import { KlaxonMark } from "./klaxon-mark";
 
