@@ -97,7 +97,7 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState("All");
   const { data, loading, refetch } = useOrgStaff();
 
-  const apiUsers = (data?.staff ?? data?.data ?? []) as User[];
+  const apiUsers = (data?.staff ?? []) as User[];
   const users: User[] = apiUsers.length > 0 ? apiUsers : MOCK_USERS;
 
   const allRoles = ["All", ...Array.from(new Set(users.map(u => u.role ?? u.roles?.[0] ?? "Unknown")))];
