@@ -35,7 +35,7 @@ export default function LoginPage() {
       display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
       backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(20,184,142,0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 10%, rgba(20,184,142,0.04) 0%, transparent 50%)",
     }}>
-      <div style={{
+      <div className="login-card" style={{
         width: "100%", maxWidth: 880,
         display: "grid", gridTemplateColumns: "1fr 1fr",
         borderRadius: 20, overflow: "hidden",
@@ -43,8 +43,8 @@ export default function LoginPage() {
         boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
       }}>
 
-        {/* Left panel */}
-        <div style={{
+        {/* Left panel — hidden on mobile */}
+        <div className="login-left" style={{
           background: "linear-gradient(135deg, #0d1a15 0%, #07080a 100%)",
           padding: 48, display: "flex", flexDirection: "column",
           position: "relative", overflow: "hidden",
@@ -82,7 +82,14 @@ export default function LoginPage() {
         </div>
 
         {/* Right panel */}
-        <div style={{ background: "var(--bg-surface)", padding: 48, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ background: "var(--bg-surface)", padding: 48, display: "flex", flexDirection: "column", justifyContent: "center" }}
+          className="login-right">
+
+          {/* Logo shown only on mobile (left panel is hidden) */}
+          <div className="login-mobile-logo" style={{ display: "none", marginBottom: 24 }}>
+            <KlaxonMark size="md" />
+          </div>
+
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 700, color: "var(--tx-1)", letterSpacing: "-0.03em", marginBottom: 6 }}>Sign in</h1>
           <p style={{ fontSize: 13, color: "var(--tx-2)", marginBottom: 28 }}>Access your Klaxon dashboard</p>
 
@@ -143,7 +150,26 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 640px) {
+          .login-card {
+            grid-template-columns: 1fr !important;
+            max-width: 440px !important;
+          }
+          .login-left {
+            display: none !important;
+          }
+          .login-right {
+            padding: 32px 24px !important;
+          }
+          .login-mobile-logo {
+            display: block !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
