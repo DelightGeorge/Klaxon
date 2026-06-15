@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -118,12 +118,18 @@ const NAV: NavItem[] = [
 
 interface SidebarProps {
   onCollapsedChange?: (c: boolean) => void;
+  onNavigate?: () => void;
 }
 
-export function Sidebar({ onCollapsedChange }: SidebarProps) {
+export function Sidebar({ onCollapsedChange, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const pathname = usePathname();
+
+  // Auto-close mobile sidebar on route change
+  useEffect(() => {
+    onNavigate?.();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = () => {
     const next = !collapsed;
