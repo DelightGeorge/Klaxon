@@ -14,7 +14,7 @@ interface Notification {
 }
 
 interface TopbarProps {
-  collapsed: boolean;
+  collapsed?: boolean;
   onMenuClick?: () => void;
 }
 
