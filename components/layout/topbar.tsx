@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Search, LogOut, User, Settings, ChevronDown, X, Check, Loader2 } from "lucide-react";
+import { Bell, Search, LogOut, User, Settings, ChevronDown, X, Check, Loader2, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/auth-store";
@@ -13,9 +13,12 @@ interface Notification {
   read?: boolean; createdAt?: string; type?: string;
 }
 
-interface TopbarProps { collapsed: boolean; }
+interface TopbarProps {
+  collapsed: boolean;
+  onMenuClick?: () => void;
+}
 
-export function Topbar({ collapsed }: TopbarProps) {
+export function Topbar({ collapsed, onMenuClick }: TopbarProps) {
   const router = useRouter();
   const logout = useAuthStore(s => s.logout);
   const user   = useAuthStore(s => s.user);
@@ -86,46 +89,64 @@ export function Topbar({ collapsed }: TopbarProps) {
       transition: "left 0.25s cubic-bezier(0.16,1,0.3,1)",
     }}>
 
-      {/* Search */}
-      <div style={{ position: "relative", width: 280 }}>
-        <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: "var(--tx-3)", pointerEvents: "none" }} />
-        <input
-          ref={searchRef}
-          placeholder="Search… (⌘K)"
-          className="kx-input"
-          style={{ paddingLeft: 30, paddingRight: 36, height: 34, fontSize: 12 }}
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          onFocus={() => setSearchQuery(searchQuery)}
-          onBlur={() => setTimeout(() => setSearchQuery(""), 200)}
-        />
-        {searchQuery && (
-          <button onClick={() => setSearchQuery("")}
-            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--tx-3)", display: "flex", padding: 0 }}>
-            <X style={{ width: 12, height: 12 }} />
+      {/* Left: mobile menu button + search */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {onMenuClick && (
+          <button
+            onClick={onMenuClick}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 34, height: 34, borderRadius: 9,
+              background: "var(--bg-raised)", border: "1px solid var(--bd-1)",
+              cursor: "pointer", transition: "border-color 0.15s", flexShrink: 0,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--bd-k)")}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--bd-1)")}>
+            <Menu style={{ width: 15, height: 15, color: "var(--tx-2)" }} />
           </button>
         )}
 
-        {/* Search dropdown */}
-        {searchQuery.length > 0 && (
-          <div style={{
-            position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
-            background: "var(--bg-overlay)", border: "1px solid var(--bd-1)",
-            borderRadius: 12, padding: 6, boxShadow: "0 16px 40px rgba(0,0,0,0.4)", zIndex: 200,
-          }}>
-            {SEARCH_SHORTCUTS.length === 0 ? (
-              <p style={{ padding: "8px 10px", fontSize: 12, color: "var(--tx-3)" }}>No results found</p>
-            ) : SEARCH_SHORTCUTS.map(s => (
-              <Link key={s.href} href={s.href}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, textDecoration: "none", color: "var(--tx-1)", fontSize: 13, transition: "background 0.1s" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                <Search style={{ width: 12, height: 12, color: "var(--tx-3)" }} />
-                {s.label}
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Search */}
+        <div style={{ position: "relative", width: 280 }}>
+          <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: "var(--tx-3)", pointerEvents: "none" }} />
+          <input
+            ref={searchRef}
+            placeholder="Search… (⌘K)"
+            className="kx-input"
+            style={{ paddingLeft: 30, paddingRight: 36, height: 34, fontSize: 12 }}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchQuery(searchQuery)}
+            onBlur={() => setTimeout(() => setSearchQuery(""), 200)}
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")}
+              style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "var(--tx-3)", display: "flex", padding: 0 }}>
+              <X style={{ width: 12, height: 12 }} />
+            </button>
+          )}
+
+          {/* Search dropdown */}
+          {searchQuery.length > 0 && (
+            <div style={{
+              position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+              background: "var(--bg-overlay)", border: "1px solid var(--bd-1)",
+              borderRadius: 12, padding: 6, boxShadow: "0 16px 40px rgba(0,0,0,0.4)", zIndex: 200,
+            }}>
+              {SEARCH_SHORTCUTS.length === 0 ? (
+                <p style={{ padding: "8px 10px", fontSize: 12, color: "var(--tx-3)" }}>No results found</p>
+              ) : SEARCH_SHORTCUTS.map(s => (
+                <Link key={s.href} href={s.href}
+                  style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, textDecoration: "none", color: "var(--tx-1)", fontSize: 13, transition: "background 0.1s" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                  <Search style={{ width: 12, height: 12, color: "var(--tx-3)" }} />
+                  {s.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right */}
