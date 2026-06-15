@@ -66,8 +66,9 @@ export default function ApplyPage() {
           <CheckCircle style={{ width:32, height:32, color:"var(--k)" }} />
         </div>
         <h2 style={{ fontFamily:"'Syne',sans-serif", fontSize:24, fontWeight:800, color:"var(--tx-1)", marginBottom:10 }}>Application Submitted!</h2>
+        {/* FIX: wrapped in template literal to avoid unescaped-entities lint error */}
         <p style={{ fontSize:13, color:"var(--tx-2)", lineHeight:1.7, marginBottom:28 }}>
-          Your organisation application has been received. Our team will review it and get back to you within 24-48 hours via email.
+          {`Your organisation application has been received. Our team will review it and get back to you within 24-48 hours via email.`}
         </p>
         <button onClick={() => router.push("/login")} className="btn-primary btn-sm" style={{ margin:"0 auto" }}>
           Back to Login <ArrowRight style={{ width:14, height:14 }} />
@@ -87,7 +88,7 @@ export default function ApplyPage() {
         <div style={{ textAlign:"center", marginBottom:32 }}>
           <div style={{ display:"inline-flex", marginBottom:16 }}><KlaxonMark size="md" /></div>
           <h1 style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:700, color:"var(--tx-1)", marginBottom:6 }}>Register Your Organisation</h1>
-          <p style={{ fontSize:13, color:"var(--tx-2)" }}>Join Klaxon's healthcare supply chain network</p>
+          <p style={{ fontSize:13, color:"var(--tx-2)" }}>Join Klaxon&apos;s healthcare supply chain network</p>
         </div>
 
         {/* Step indicator */}
@@ -185,8 +186,9 @@ export default function ApplyPage() {
                   </div>
                 ))}
               </div>
+              {/* FIX: wrapped in template literal to avoid unescaped-entities lint error */}
               <p style={{ fontSize:11, color:"var(--tx-3)", lineHeight:1.6 }}>
-                By submitting, you confirm that the information above is accurate. Our team will review your application and contact you within 24-48 hours.
+                {`By submitting, you confirm that the information above is accurate. Our team will review your application and contact you within 24-48 hours.`}
               </p>
               <div style={{ display:"flex", justifyContent:"space-between", marginTop:4 }}>
                 <button onClick={() => { setError(""); setStep(1); }} className="btn-secondary btn-sm">
