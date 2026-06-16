@@ -4,7 +4,7 @@ import {
   Search, ShoppingCart, Plus, Minus, X, Package, Loader2,
   ArrowRight, Heart, Star, Filter, ChevronDown, CheckCircle,
   Truck, Shield, Clock, Tag, Home, Grid, List, Bell,
-  MapPin, ChevronLeft, Eye, Share2, Zap
+  MapPin, ChevronLeft, Eye, Zap
 } from "lucide-react";
 import { KlaxonMark } from "@/components/layout/klaxon-mark";
 import { api } from "@/lib/api";
@@ -162,6 +162,7 @@ export default function ShopPage() {
       <div className="card" style={{ padding:0, overflow:"hidden", display:"flex" }}>
         <div style={{ width:100, flexShrink:0, background:"var(--bg-overlay)", position:"relative" }}>
           {drug.mockImage
+            // eslint-disable-next-line @next/next/no-img-element
             ? <img src={drug.mockImage} alt={drug.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
             : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:24, height:24, color:"var(--tx-3)" }} /></div>
           }
@@ -205,20 +206,18 @@ export default function ShopPage() {
         {/* Image */}
         <div style={{ position:"relative", height:140, background:"var(--bg-overlay)", overflow:"hidden" }}>
           {drug.mockImage
+            // eslint-disable-next-line @next/next/no-img-element
             ? <img src={drug.mockImage} alt={drug.name} style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.3s" }}
                 onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
                 onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
             : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:32, height:32, color:"var(--tx-3)" }} /></div>
           }
-          {/* Badge */}
           {drug.badge && (
             <span style={{ position:"absolute", top:8, left:8, fontSize:9, padding:"3px 7px", borderRadius:99, background:BADGE_COLORS[drug.badge] ?? "var(--k)", color:"#07080a", fontWeight:800, fontFamily:"'DM Mono',monospace" }}>{drug.badge}</span>
           )}
-          {/* Wishlist */}
           <button onClick={() => toggleWishlist(drug.id)} style={{ position:"absolute", top:8, right:8, width:28, height:28, borderRadius:8, background:"rgba(7,8,10,0.7)", border:"1px solid var(--bd-1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Heart style={{ width:13, height:13, fill: wished ? "#f43f5e" : "none", color: wished ? "#f43f5e" : "var(--tx-3)" }} />
           </button>
-          {/* Quick view */}
           <button onClick={() => setSelected(drug)} style={{ position:"absolute", bottom:8, right:8, width:28, height:28, borderRadius:8, background:"rgba(7,8,10,0.7)", border:"1px solid var(--bd-1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Eye style={{ width:13, height:13, color:"var(--tx-2)" }} />
           </button>
@@ -336,7 +335,7 @@ export default function ShopPage() {
             <CheckCircle style={{ width:18, height:18, color:"var(--k)", flexShrink:0 }} />
             <div>
               <p style={{ fontSize:13, color:"var(--tx-1)", fontWeight:600 }}>Order placed successfully!</p>
-              <p style={{ fontSize:11, color:"var(--tx-2)" }}>You'll receive a confirmation and tracking details via email shortly.</p>
+              <p style={{ fontSize:11, color:"var(--tx-2)" }}>You&apos;ll receive a confirmation and tracking details via email shortly.</p>
             </div>
             <button onClick={() => setOrdered(false)} style={{ marginLeft:"auto", background:"none", border:"none", cursor:"pointer", color:"var(--tx-3)" }}><X style={{ width:14, height:14 }} /></button>
           </div>
@@ -471,6 +470,7 @@ export default function ShopPage() {
                     <div key={item.id} style={{ display:"flex", gap:10, padding:"10px 12px", borderRadius:12, background:"var(--bg-overlay)", border:"1px solid var(--bd-1)" }}>
                       <div style={{ width:48, height:48, borderRadius:8, overflow:"hidden", background:"var(--bg-raised)", flexShrink:0 }}>
                         {item.mockImage
+                          // eslint-disable-next-line @next/next/no-img-element
                           ? <img src={item.mockImage} alt={item.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
                           : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:16, height:16, color:"var(--tx-3)" }} /></div>
                         }
@@ -492,7 +492,6 @@ export default function ShopPage() {
 
             {cart.length > 0 && (
               <div style={{ padding:"14px 20px", borderTop:"1px solid var(--bd-1)" }}>
-                {/* Delivery address */}
                 <div style={{ marginBottom:12 }}>
                   <label style={{ fontSize:11, fontFamily:"'DM Mono',monospace", color:"var(--tx-3)", textTransform:"uppercase", letterSpacing:"0.06em", display:"block", marginBottom:5 }}>
                     <MapPin style={{ width:11, height:11, display:"inline", marginRight:4 }} />Delivery Address
@@ -500,7 +499,6 @@ export default function ShopPage() {
                   <input value={address} onChange={e => setAddress(e.target.value)} placeholder="Enter your full address..." className="kx-input" style={{ fontSize:12 }} />
                 </div>
 
-                {/* Order summary */}
                 <div style={{ background:"var(--bg-overlay)", borderRadius:10, padding:"10px 12px", marginBottom:12, display:"flex", flexDirection:"column", gap:6 }}>
                   <div style={{ display:"flex", justifyContent:"space-between" }}>
                     <span style={{ fontSize:12, color:"var(--tx-3)" }}>Subtotal</span>
@@ -539,6 +537,7 @@ export default function ShopPage() {
           <div style={{ position:"absolute", right:0, top:0, bottom:0, width:"min(480px,100vw)", background:"var(--bg-surface)", borderLeft:"1px solid var(--bd-1)", display:"flex", flexDirection:"column", overflowY:"auto" }}>
             <div style={{ position:"relative" }}>
               {selected.mockImage
+                // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={selected.mockImage} alt={selected.name} style={{ width:"100%", height:200, objectFit:"cover" }} />
                 : <div style={{ width:"100%", height:200, background:"var(--bg-overlay)", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:48, height:48, color:"var(--tx-3)" }} /></div>
               }
@@ -564,14 +563,13 @@ export default function ShopPage() {
                 {selected.requiresPrescription && <span style={{ fontSize:10, padding:"2px 7px", borderRadius:99, background:"rgba(244,63,94,0.1)", color:"#f43f5e", fontWeight:700 }}>Prescription Required</span>}
               </div>
 
-              {/* Details grid */}
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
                 {[
-                  { label:"Brand",     value: selected.brand },
-                  { label:"Dosage",    value: selected.dosageForm },
-                  { label:"Strength",  value: selected.strength },
-                  { label:"Unit",      value: selected.unit },
-                  { label:"Category",  value: selected.category?.replace(/_/g," ") },
+                  { label:"Brand",        value: selected.brand },
+                  { label:"Dosage",       value: selected.dosageForm },
+                  { label:"Strength",     value: selected.strength },
+                  { label:"Unit",         value: selected.unit },
+                  { label:"Category",     value: selected.category?.replace(/_/g," ") },
                   { label:"Manufacturer", value: selected.manufacturer },
                 ].filter(r => r.value).map(row => (
                   <div key={row.label} style={{ background:"var(--bg-overlay)", borderRadius:8, padding:"8px 10px" }}>
@@ -614,10 +612,10 @@ export default function ShopPage() {
       <div className="mobile-bottom-nav" style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(17,19,24,0.97)", backdropFilter:"blur(12px)", borderTop:"1px solid var(--bd-1)", display:"none", zIndex:200, padding:"8px 0 4px" }}>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
           {[
-            { id:"home",    icon:<Home style={{ width:18, height:18 }} />,         label:"Home",       href:"/dashboard" },
-            { id:"shop",    icon:<Package style={{ width:18, height:18 }} />,      label:"Shop",       href:"/shop" },
-            { id:"cart",    icon:<ShoppingCart style={{ width:18, height:18 }} />, label:"Cart",       action:() => setShowCart(true) },
-            { id:"profile", icon:<Bell style={{ width:18, height:18 }} />,         label:"Alerts",     href:"/notifications" },
+            { id:"home",    icon:<Home style={{ width:18, height:18 }} />,         label:"Home",   href:"/dashboard" },
+            { id:"shop",    icon:<Package style={{ width:18, height:18 }} />,      label:"Shop",   href:"/shop" },
+            { id:"cart",    icon:<ShoppingCart style={{ width:18, height:18 }} />, label:"Cart",   action:() => setShowCart(true) },
+            { id:"profile", icon:<Bell style={{ width:18, height:18 }} />,         label:"Alerts", href:"/notifications" },
           ].map(tab => (
             <button key={tab.id} onClick={() => { setMobileTab(tab.id as typeof mobileTab); tab.action?.(); }} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"6px 0 8px", background:"none", border:"none", cursor:"pointer", position:"relative" }}>
               {tab.id === "cart" && cartCount > 0 && (
