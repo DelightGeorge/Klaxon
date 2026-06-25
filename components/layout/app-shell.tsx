@@ -1,4 +1,3 @@
-// components/layout/app-shell.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,7 +12,13 @@ export function AppShell({ children }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-root)" }}>
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        background: "var(--bg-root)",
+      }}
+    >
       {/* Sidebar manages its own collapse state and notifies us */}
       <Sidebar onCollapsedChange={setCollapsed} />
 

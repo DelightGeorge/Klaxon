@@ -9,7 +9,7 @@ import {
 import { KlaxonMark } from "@/components/layout/klaxon-mark";
 import { api } from "@/lib/api";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Drug {
   id: string; name: string; genericName?: string; brand?: string;
   category?: string; type?: string; unit?: string;
@@ -20,7 +20,7 @@ interface Drug {
 }
 interface CartItem extends Drug { qty: number; }
 
-// ── Mock Products with Unsplash medicine images ────────────────────────────────
+// â”€â”€ Mock Products with Unsplash medicine images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const MOCK_DRUGS: Drug[] = [
   { id:"m1", name:"Paracetamol 500mg", genericName:"Acetaminophen", brand:"Emzor", category:"ANALGESIC", type:"OTC", unit:"tablets", sellingPrice:350, dosageForm:"TABLET", strength:"500mg", manufacturer:"Emzor Pharmaceuticals", description:"Effective pain reliever and fever reducer. Suitable for adults and children over 12.", mockImage:"https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80", rating:4.8, reviews:1240, badge:"Best Seller" },
   { id:"m2", name:"Amoxicillin 250mg", genericName:"Amoxicillin trihydrate", brand:"Beecham", category:"ANTIBIOTIC", type:"PRESCRIPTION", unit:"capsules", sellingPrice:1200, dosageForm:"CAPSULE", strength:"250mg", manufacturer:"GSK Nigeria", description:"Broad-spectrum antibiotic for bacterial infections. Requires valid prescription.", mockImage:"https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80", rating:4.6, reviews:890, requiresPrescription:true, badge:"Rx Required" },
@@ -48,7 +48,7 @@ const BADGE_COLORS: Record<string, string> = {
   "Essential":   "#22c55e",
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Stars({ rating }: { rating: number }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:2 }}>
@@ -59,7 +59,7 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-// Small debounce hook — avoids firing a network request on every keystroke
+// Small debounce hook â€” avoids firing a network request on every keystroke
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -69,7 +69,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ShopPage() {
   const [drugs, setDrugs]         = useState<Drug[]>(MOCK_DRUGS);
   const [initialLoading, setInitialLoading] = useState(true); // only true on first mount
@@ -95,7 +95,7 @@ export default function ShopPage() {
   const debouncedSearch = useDebouncedValue(search, 350);
 
   // Fetch once on mount, and again only when the debounced search/category
-  // actually settle — never on every keystroke. Filtering itself happens
+  // actually settle â€” never on every keystroke. Filtering itself happens
   // client-side below (see `filtered`), so the UI feels instant even while
   // a background refetch is in flight.
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function ShopPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, cat]);
 
-  // Filter + sort — runs instantly client-side on every render, independent
+  // Filter + sort â€” runs instantly client-side on every render, independent
   // of network state, so typing/filtering never feels blocked by loading.
   const filtered = useMemo(() => {
     return drugs
@@ -175,7 +175,7 @@ export default function ShopPage() {
     } finally { setOrdering(false); }
   };
 
-  // ── Product card ─────────────────────────────────────────────────────────────
+  // â”€â”€ Product card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const ProductCard = ({ drug }: { drug: Drug }) => {
     const inCart = cart.find(i => i.id === drug.id);
     const wished = wishlist.includes(drug.id);
@@ -195,7 +195,7 @@ export default function ShopPage() {
               <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>{drug.name}</p>
               {drug.badge && <span style={{ fontSize:9, padding:"2px 6px", borderRadius:99, background:`${BADGE_COLORS[drug.badge]}20`, color:BADGE_COLORS[drug.badge], fontWeight:700, fontFamily:"'DM Mono',monospace" }}>{drug.badge}</span>}
             </div>
-            <p style={{ fontSize:11, color:"var(--tx-3)", marginBottom:4 }}>{drug.genericName} · {drug.dosageForm}</p>
+            <p style={{ fontSize:11, color:"var(--tx-3)", marginBottom:4 }}>{drug.genericName} Â· {drug.dosageForm}</p>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               {drug.rating && <Stars rating={drug.rating} />}
               {drug.reviews && <span style={{ fontSize:10, color:"var(--tx-3)" }}>({drug.reviews.toLocaleString()})</span>}
@@ -203,7 +203,7 @@ export default function ShopPage() {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ textAlign:"right" }}>
-              <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:"var(--k)" }}>₦{(drug.sellingPrice ?? 0).toLocaleString()}</p>
+              <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:"var(--k)" }}>â‚¦{(drug.sellingPrice ?? 0).toLocaleString()}</p>
               <p style={{ fontSize:9, color:"var(--tx-3)" }}>per {drug.unit}</p>
             </div>
             {inCart ? (
@@ -260,7 +260,7 @@ export default function ShopPage() {
           </div>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:"auto", paddingTop:8 }}>
             <div>
-              <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, color:"var(--k)" }}>₦{(drug.sellingPrice ?? 0).toLocaleString()}</p>
+              <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, color:"var(--k)" }}>â‚¦{(drug.sellingPrice ?? 0).toLocaleString()}</p>
               <p style={{ fontSize:9, color:"var(--tx-3)" }}>/{drug.unit}</p>
             </div>
             {inCart ? (
@@ -280,11 +280,11 @@ export default function ShopPage() {
     );
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div style={{ minHeight:"100vh", background:"var(--bg-root)", paddingBottom:80 }}>
 
-      {/* ── Topbar ── */}
+      {/* â”€â”€ Topbar â”€â”€ */}
       <div style={{ position:"sticky", top:0, zIndex:100, background:"rgba(17,19,24,0.95)", backdropFilter:"blur(12px)", borderBottom:"1px solid var(--bd-1)", padding:"10px 16px" }}>
         <div style={{ maxWidth:1200, margin:"0 auto", display:"flex", alignItems:"center", gap:12 }}>
           <a href="/dashboard" style={{ display:"flex", alignItems:"center", textDecoration:"none", flexShrink:0 }}>
@@ -325,7 +325,7 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* ── Main content ── */}
+      {/* â”€â”€ Main content â”€â”€ */}
       <div style={{ maxWidth:1200, margin:"0 auto", padding:"20px 16px" }}>
 
         {/* Hero banner */}
@@ -337,7 +337,7 @@ export default function ShopPage() {
             <p style={{ fontSize:12, color:"var(--tx-2)", lineHeight:1.6, maxWidth:500, marginBottom:14 }}>Order verified OTC medicines and supplements from NAFDAC-licensed distributors. Fast delivery across Nigeria.</p>
             <div style={{ display:"flex", gap:16, flexWrap:"wrap" }}>
               {[
-                { icon:<Truck style={{ width:13, height:13 }} />, text:"Free delivery over ₦10,000" },
+                { icon:<Truck style={{ width:13, height:13 }} />, text:"Free delivery over â‚¦10,000" },
                 { icon:<Shield style={{ width:13, height:13 }} />, text:"NAFDAC verified" },
                 { icon:<Clock style={{ width:13, height:13 }} />, text:"Same-day Lagos delivery" },
                 { icon:<Zap style={{ width:13, height:13 }} />, text:"Express 3-hour option" },
@@ -363,7 +363,7 @@ export default function ShopPage() {
           </div>
         )}
 
-        {/* ── Controls row ── */}
+        {/* â”€â”€ Controls row â”€â”€ */}
         <div style={{ display:"flex", gap:8, marginBottom:16, alignItems:"center", flexWrap:"wrap" }}>
           {/* Category scroll */}
           <div style={{ display:"flex", gap:6, overflowX:"auto", flex:1, paddingBottom:2 }}>
@@ -419,10 +419,10 @@ export default function ShopPage() {
               </div>
             </div>
             <div style={{ flex:2, minWidth:240 }}>
-              <p style={{ fontSize:11, color:"var(--tx-3)", fontFamily:"'DM Mono',monospace", textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:8 }}>Max Price: ₦{priceMax.toLocaleString()}</p>
+              <p style={{ fontSize:11, color:"var(--tx-3)", fontFamily:"'DM Mono',monospace", textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:8 }}>Max Price: â‚¦{priceMax.toLocaleString()}</p>
               <input type="range" min={100} max={10000} step={100} value={priceMax} onChange={e => setPriceMax(Number(e.target.value))} style={{ width:"100%", accentColor:"var(--k)" }} />
               <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"var(--tx-3)", marginTop:2 }}>
-                <span>₦100</span><span>₦10,000</span>
+                <span>â‚¦100</span><span>â‚¦10,000</span>
               </div>
             </div>
             <button onClick={() => { setRxOnly(null); setPriceMax(5000); setShowFilter(false); }} style={{ padding:"6px 14px", borderRadius:10, background:"none", border:"1px solid var(--bd-1)", cursor:"pointer", fontSize:11, color:"var(--tx-3)", alignSelf:"flex-end" }}>Reset</button>
@@ -442,7 +442,7 @@ export default function ShopPage() {
           )}
         </div>
 
-        {/* Products grid/list — only blocked by a spinner on the very first load */}
+        {/* Products grid/list â€” only blocked by a spinner on the very first load */}
         {initialLoading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:64 }}>
             <Loader2 style={{ width:28, height:28, color:"var(--k)" }} className="animate-spin" />
@@ -466,7 +466,7 @@ export default function ShopPage() {
         )}
       </div>
 
-      {/* ── Cart Drawer ── */}
+      {/* â”€â”€ Cart Drawer â”€â”€ */}
       {showCart && (
         <div style={{ position:"fixed", inset:0, zIndex:300 }}>
           <div onClick={() => setShowCart(false)} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.7)" }} />
@@ -499,7 +499,7 @@ export default function ShopPage() {
                       </div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <p style={{ fontSize:12, fontWeight:600, color:"var(--tx-1)", lineHeight:1.3 }}>{item.name}</p>
-                        <p style={{ fontSize:10, color:"var(--tx-3)", marginTop:1 }}>₦{(item.sellingPrice ?? 0).toLocaleString()} × {item.qty} = <strong style={{ color:"var(--k)" }}>₦{((item.sellingPrice ?? 0) * item.qty).toLocaleString()}</strong></p>
+                        <p style={{ fontSize:10, color:"var(--tx-3)", marginTop:1 }}>â‚¦{(item.sellingPrice ?? 0).toLocaleString()} Ã— {item.qty} = <strong style={{ color:"var(--k)" }}>â‚¦{((item.sellingPrice ?? 0) * item.qty).toLocaleString()}</strong></p>
                       </div>
                       <div style={{ display:"flex", alignItems:"center", gap:5, flexShrink:0 }}>
                         <button onClick={() => updateQty(item.id, -1)} style={{ width:22, height:22, borderRadius:6, background:"var(--bg-surface)", border:"1px solid var(--bd-1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><Minus style={{ width:8, height:8 }} /></button>
@@ -524,27 +524,27 @@ export default function ShopPage() {
                 <div style={{ background:"var(--bg-overlay)", borderRadius:10, padding:"10px 12px", marginBottom:12, display:"flex", flexDirection:"column", gap:6 }}>
                   <div style={{ display:"flex", justifyContent:"space-between" }}>
                     <span style={{ fontSize:12, color:"var(--tx-3)" }}>Subtotal</span>
-                    <span style={{ fontSize:12, color:"var(--tx-1)" }}>₦{total.toLocaleString()}</span>
+                    <span style={{ fontSize:12, color:"var(--tx-1)" }}>â‚¦{total.toLocaleString()}</span>
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between" }}>
                     <span style={{ fontSize:12, color:"var(--tx-3)" }}>Delivery</span>
-                    <span style={{ fontSize:12, color: deliveryFee === 0 ? "var(--k)" : "var(--tx-1)" }}>{deliveryFee === 0 ? "FREE" : `₦${deliveryFee.toLocaleString()}`}</span>
+                    <span style={{ fontSize:12, color: deliveryFee === 0 ? "var(--k)" : "var(--tx-1)" }}>{deliveryFee === 0 ? "FREE" : `â‚¦${deliveryFee.toLocaleString()}`}</span>
                   </div>
-                  {deliveryFee > 0 && <p style={{ fontSize:10, color:"var(--tx-3)" }}>Add ₦{(10000-total).toLocaleString()} more for free delivery</p>}
+                  {deliveryFee > 0 && <p style={{ fontSize:10, color:"var(--tx-3)" }}>Add â‚¦{(10000-total).toLocaleString()} more for free delivery</p>}
                   <div style={{ borderTop:"1px solid var(--bd-1)", paddingTop:6, display:"flex", justifyContent:"space-between" }}>
                     <span style={{ fontSize:13, fontWeight:700, color:"var(--tx-1)" }}>Total</span>
-                    <span style={{ fontSize:15, fontWeight:800, color:"var(--k)", fontFamily:"'Syne',sans-serif" }}>₦{(total + deliveryFee).toLocaleString()}</span>
+                    <span style={{ fontSize:15, fontWeight:800, color:"var(--k)", fontFamily:"'Syne',sans-serif" }}>â‚¦{(total + deliveryFee).toLocaleString()}</span>
                   </div>
                 </div>
 
                 <button onClick={placeOrder} disabled={ordering || !address.trim()} className="btn-primary btn-lg" style={{ width:"100%", justifyContent:"center", opacity: !address.trim() ? 0.5 : 1 }}>
                   {ordering
                     ? <><Loader2 style={{ width:14, height:14 }} className="animate-spin" /> Placing order...</>
-                    : <>Place Order · ₦{(total + deliveryFee).toLocaleString()} <ArrowRight style={{ width:14, height:14 }} /></>
+                    : <>Place Order Â· â‚¦{(total + deliveryFee).toLocaleString()} <ArrowRight style={{ width:14, height:14 }} /></>
                   }
                 </button>
                 <p style={{ fontSize:10, color:"var(--tx-3)", textAlign:"center", marginTop:8 }}>
-                  <Shield style={{ width:10, height:10, display:"inline", marginRight:3 }} />Secured payment · NAFDAC verified products
+                  <Shield style={{ width:10, height:10, display:"inline", marginRight:3 }} />Secured payment Â· NAFDAC verified products
                 </p>
               </div>
             )}
@@ -552,7 +552,7 @@ export default function ShopPage() {
         </div>
       )}
 
-      {/* ── Product Detail Drawer ── */}
+      {/* â”€â”€ Product Detail Drawer â”€â”€ */}
       {selected && (
         <div style={{ position:"fixed", inset:0, zIndex:300 }}>
           <div onClick={() => setSelected(null)} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,0.7)" }} />
@@ -610,7 +610,7 @@ export default function ShopPage() {
 
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingTop:16, borderTop:"1px solid var(--bd-1)" }}>
                 <div>
-                  <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:22, color:"var(--k)" }}>₦{(selected.sellingPrice ?? 0).toLocaleString()}</p>
+                  <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:22, color:"var(--k)" }}>â‚¦{(selected.sellingPrice ?? 0).toLocaleString()}</p>
                   <p style={{ fontSize:11, color:"var(--tx-3)" }}>per {selected.unit}</p>
                 </div>
                 {cart.find(i => i.id === selected.id) ? (
@@ -630,7 +630,7 @@ export default function ShopPage() {
         </div>
       )}
 
-      {/* ── Mobile bottom nav ── */}
+      {/* â”€â”€ Mobile bottom nav â”€â”€ */}
       <div className="mobile-bottom-nav" style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(17,19,24,0.97)", backdropFilter:"blur(12px)", borderTop:"1px solid var(--bd-1)", display:"none", zIndex:200, padding:"8px 0 4px" }}>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
           {[

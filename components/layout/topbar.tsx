@@ -107,7 +107,7 @@ export function Topbar({ collapsed, onMenuClick }: TopbarProps) {
         )}
 
         {/* Search */}
-        <div style={{ position: "relative", width: 280 }}>
+        <div style={{ position: "relative", width: "clamp(140px, 30vw, 280px)" }}>
           <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: "var(--tx-3)", pointerEvents: "none" }} />
           <input
             ref={searchRef}
