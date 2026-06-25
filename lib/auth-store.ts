@@ -37,6 +37,24 @@ export interface RegisterData {
   phone?: string;
 }
 
+// Normalizes roles from the API: the backend sometimes returns a join-table
+// shape like [{ role: { name: "ORG_ADMIN" } }] instead of plain strings.
+// Always converts to string[] so the rest of the app can rely on AuthUser.roles
+// being plain strings, matching its declared type.
+function normalizeRoles(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((r) => {
+      if (typeof r === "string") return r;
+      if (r && typeof r === "object" && "role" in r) {
+        const name = (r as { role?: { name?: string } }).role?.name;
+        return name ?? null;
+      }
+      return null;
+    })
+    .filter((r): r is string => Boolean(r));
+}
+
 // ── Role → dashboard map ─────────────────────────────────────────────────────
 export const ROLE_DASHBOARD: Record<string, string> = {
   SUPER_ADMIN:        "/dashboard",
@@ -85,16 +103,21 @@ export const useAuthStore = create<AuthState>()(
             refreshToken: string;
           }>("/auth/login", { email, password });
 
+          const normalizedUser: AuthUser = {
+            ...res.data.user,
+            roles: normalizeRoles(res.data.user.roles),
+          };
+
           tokenStore.set(res.data.accessToken, res.data.refreshToken);
           set({
-            user:            res.data.user,
+            user:            normalizedUser,
             accessToken:     res.data.accessToken,
             refreshToken:    res.data.refreshToken,
             isAuthenticated: true,
             isLoading:       false,
           });
 
-          const role = res.data.user.roles[0];
+          const role = normalizedUser.roles[0];
           return role ? (ROLE_DASHBOARD[role] ?? "/dashboard") : "/dashboard";
         } catch (err) {
           set({ isLoading: false });

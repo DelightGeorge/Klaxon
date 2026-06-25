@@ -15,7 +15,7 @@ type User = {
   lastName?: string;
   email: string;
   role?: string;
-  roles?: string[];
+  roles?: (string | { role?: { name?: string } })[];
   org?: string;
   organizationName?: string;
   status?: string;
@@ -310,16 +310,27 @@ export default function AdminUsersPage() {
   const apiUsers = (data ?? []) as User[];
   const users: User[] = apiUsers.length > 0 ? apiUsers : MOCK_USERS;
 
+  // Safely extract a plain role-name string whether `roles` holds
+  // plain strings (legacy/mock shape) or { role: { name } } objects
+  // (live API shape from useOrgStaff). Never returns an object.
+  const roleOf = (u: User): string => {
+    if (u.role) return u.role;
+    const r = u.roles?.[0];
+    if (!r) return "Unknown";
+    if (typeof r === "string") return r;
+    return r.role?.name ?? "Unknown";
+  };
+
   const allRoles = [
     "All",
     ...Array.from(
-      new Set(users.map((u) => u.role ?? u.roles?.[0] ?? "Unknown")),
+      new Set(users.map((u) => roleOf(u))),
     ),
   ];
   const filtered =
     roleFilter === "All"
       ? users
-      : users.filter((u) => (u.role ?? u.roles?.[0]) === roleFilter);
+      : users.filter((u) => roleOf(u) === roleFilter);
 
   const handleAction = async (
     userId: string,
@@ -338,8 +349,7 @@ export default function AdminUsersPage() {
 
   const getName = (u: User) =>
     u.name ?? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
-  const getRole = (u: User) =>
-    (u.role ?? u.roles?.[0] ?? "").replace(/_/g, " ");
+  const getRole = (u: User) => roleOf(u).replace(/_/g, " ");
   const getStatus = (u: User) => u.status ?? "Active";
 
   const cols: Col<User>[] = [

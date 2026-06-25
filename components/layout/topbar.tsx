@@ -39,7 +39,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.toUpperCase()
     : "SA";
   const displayName = user ? `${user.firstName} ${user.lastName}` : "Super Admin";
-  const roleName    = user?.roles?.[0]?.replace(/_/g, " ") ?? "Super Admin";
+  const rawRole = (user?.roles as unknown as (string | { role?: { name?: string } })[] | undefined)?.[0];
+  const roleName =
+    (typeof rawRole === "string" ? rawRole : rawRole?.role?.name)
+      ?.replace(/_/g, " ") ?? "Super Admin";
 
   const handleLogout = async () => {
     setLoggingOut(true);
