@@ -23,7 +23,7 @@ export function AppShell({ children }: AppShellProps) {
       <Sidebar onCollapsedChange={setCollapsed} />
 
       {/* Topbar shifts with the sidebar */}
-      <Topbar collapsed={collapsed} />
+      <Topbar />
 
       {/* Page content */}
       <main
