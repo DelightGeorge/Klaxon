@@ -14,11 +14,11 @@ interface Notification {
 }
 
 interface TopbarProps {
-  collapsed?: boolean;
+  
   onMenuClick?: () => void;
 }
 
-export function Topbar({ collapsed, onMenuClick }: TopbarProps) {
+export function Topbar({ onMenuClick }: TopbarProps) {
   const router = useRouter();
   const logout = useAuthStore(s => s.logout);
   const user   = useAuthStore(s => s.user);
