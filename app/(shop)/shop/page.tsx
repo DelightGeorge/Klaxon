@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Search, ShoppingCart, Plus, Minus, X, Package, Loader2,
   ArrowRight, Heart, Star, Filter, ChevronDown, CheckCircle,
@@ -59,10 +59,20 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+// Small debounce hook — avoids firing a network request on every keystroke
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(t);
+  }, [value, delayMs]);
+  return debounced;
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ShopPage() {
   const [drugs, setDrugs]         = useState<Drug[]>(MOCK_DRUGS);
-  const [loading, setLoading]     = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true); // only true on first mount
   const [search, setSearch]       = useState("");
   const [cat, setCat]             = useState("All");
   const [sort, setSort]           = useState("Most Popular");
@@ -81,38 +91,50 @@ export default function ShopPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Try real API, fall back to mock
+  // Debounce search so we don't hammer the API on every keystroke
+  const debouncedSearch = useDebouncedValue(search, 350);
+
+  // Fetch once on mount, and again only when the debounced search/category
+  // actually settle — never on every keystroke. Filtering itself happens
+  // client-side below (see `filtered`), so the UI feels instant even while
+  // a background refetch is in flight.
   useEffect(() => {
-    setLoading(true);
+    let cancelled = false;
     api.get("/ppmv/catalogue", {
-      params: { search: search || undefined, category: cat !== "All" ? cat : undefined }
+      params: { search: debouncedSearch || undefined, category: cat !== "All" ? cat : undefined }
     })
       .then(r => {
+        if (cancelled) return;
         const d = r.data as { drugs?: Drug[]; products?: Drug[]; data?: Drug[] };
         const real = d.drugs ?? d.products ?? d.data ?? [];
         if (real.length > 0) setDrugs(real);
         else setDrugs(MOCK_DRUGS);
       })
-      .catch(() => setDrugs(MOCK_DRUGS))
-      .finally(() => setLoading(false));
-  }, [search, cat]);
+      .catch(() => { if (!cancelled) setDrugs(MOCK_DRUGS); })
+      .finally(() => { if (!cancelled) setInitialLoading(false); });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, cat]);
 
-  // Filter + sort
-  const filtered = drugs
-    .filter(d => {
-      const q = search.toLowerCase();
-      const matchSearch = !q || d.name.toLowerCase().includes(q) || (d.genericName ?? "").toLowerCase().includes(q) || (d.brand ?? "").toLowerCase().includes(q);
-      const matchCat  = cat === "All" || d.category === cat;
-      const matchRx   = rxOnly === null || d.requiresPrescription === rxOnly;
-      const matchPrice = (d.sellingPrice ?? 0) <= priceMax;
-      return matchSearch && matchCat && matchRx && matchPrice;
-    })
-    .sort((a, b) => {
-      if (sort === "Price: Low to High") return (a.sellingPrice ?? 0) - (b.sellingPrice ?? 0);
-      if (sort === "Price: High to Low") return (b.sellingPrice ?? 0) - (a.sellingPrice ?? 0);
-      if (sort === "Highest Rated") return (b.rating ?? 0) - (a.rating ?? 0);
-      return (b.reviews ?? 0) - (a.reviews ?? 0);
-    });
+  // Filter + sort — runs instantly client-side on every render, independent
+  // of network state, so typing/filtering never feels blocked by loading.
+  const filtered = useMemo(() => {
+    return drugs
+      .filter(d => {
+        const q = search.toLowerCase();
+        const matchSearch = !q || d.name.toLowerCase().includes(q) || (d.genericName ?? "").toLowerCase().includes(q) || (d.brand ?? "").toLowerCase().includes(q);
+        const matchCat  = cat === "All" || d.category === cat;
+        const matchRx   = rxOnly === null || d.requiresPrescription === rxOnly;
+        const matchPrice = (d.sellingPrice ?? 0) <= priceMax;
+        return matchSearch && matchCat && matchRx && matchPrice;
+      })
+      .sort((a, b) => {
+        if (sort === "Price: Low to High") return (a.sellingPrice ?? 0) - (b.sellingPrice ?? 0);
+        if (sort === "Price: High to Low") return (b.sellingPrice ?? 0) - (a.sellingPrice ?? 0);
+        if (sort === "Highest Rated") return (b.rating ?? 0) - (a.rating ?? 0);
+        return (b.reviews ?? 0) - (a.reviews ?? 0);
+      });
+  }, [drugs, search, cat, rxOnly, priceMax, sort]);
 
   const addToCart = (drug: Drug) => {
     setCart(c => {
@@ -160,10 +182,10 @@ export default function ShopPage() {
 
     if (viewMode === "list") return (
       <div className="card" style={{ padding:0, overflow:"hidden", display:"flex" }}>
-        <div style={{ width:100, flexShrink:0, background:"var(--bg-overlay)", position:"relative" }}>
+        <div style={{ width:100, height:100, flexShrink:0, background:"var(--bg-overlay)", position:"relative" }}>
           {drug.mockImage
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={drug.mockImage} alt={drug.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+            ? <img src={drug.mockImage} alt={drug.name} loading="lazy" decoding="async" width={100} height={100} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
             : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:24, height:24, color:"var(--tx-3)" }} /></div>
           }
         </div>
@@ -207,7 +229,7 @@ export default function ShopPage() {
         <div style={{ position:"relative", height:140, background:"var(--bg-overlay)", overflow:"hidden" }}>
           {drug.mockImage
             // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={drug.mockImage} alt={drug.name} style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.3s" }}
+            ? <img src={drug.mockImage} alt={drug.name} loading="lazy" decoding="async" width={400} height={140} style={{ width:"100%", height:"100%", objectFit:"cover", transition:"transform 0.3s" }}
                 onMouseEnter={e => (e.currentTarget.style.transform="scale(1.05)")}
                 onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")} />
             : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:32, height:32, color:"var(--tx-3)" }} /></div>
@@ -410,7 +432,7 @@ export default function ShopPage() {
         {/* Results info */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
           <p style={{ fontSize:12, color:"var(--tx-3)" }}>
-            {loading ? "Loading..." : `${filtered.length} product${filtered.length !== 1 ? "s" : ""} found`}
+            {`${filtered.length} product${filtered.length !== 1 ? "s" : ""} found`}
             {cat !== "All" && <span style={{ color:"var(--k)", marginLeft:4 }}>in {cat.replace(/_/g," ")}</span>}
           </p>
           {wishlist.length > 0 && (
@@ -420,8 +442,8 @@ export default function ShopPage() {
           )}
         </div>
 
-        {/* Products grid/list */}
-        {loading ? (
+        {/* Products grid/list — only blocked by a spinner on the very first load */}
+        {initialLoading ? (
           <div style={{ display:"flex", justifyContent:"center", padding:64 }}>
             <Loader2 style={{ width:28, height:28, color:"var(--k)" }} className="animate-spin" />
           </div>
@@ -471,7 +493,7 @@ export default function ShopPage() {
                       <div style={{ width:48, height:48, borderRadius:8, overflow:"hidden", background:"var(--bg-raised)", flexShrink:0 }}>
                         {item.mockImage
                           // eslint-disable-next-line @next/next/no-img-element
-                          ? <img src={item.mockImage} alt={item.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                          ? <img src={item.mockImage} alt={item.name} loading="lazy" decoding="async" width={48} height={48} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
                           : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:16, height:16, color:"var(--tx-3)" }} /></div>
                         }
                       </div>
@@ -538,7 +560,7 @@ export default function ShopPage() {
             <div style={{ position:"relative" }}>
               {selected.mockImage
                 // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={selected.mockImage} alt={selected.name} style={{ width:"100%", height:200, objectFit:"cover" }} />
+                ? <img src={selected.mockImage} alt={selected.name} loading="lazy" decoding="async" width={480} height={200} style={{ width:"100%", height:200, objectFit:"cover" }} />
                 : <div style={{ width:"100%", height:200, background:"var(--bg-overlay)", display:"flex", alignItems:"center", justifyContent:"center" }}><Package style={{ width:48, height:48, color:"var(--tx-3)" }} /></div>
               }
               <button onClick={() => setSelected(null)} style={{ position:"absolute", top:12, right:12, width:32, height:32, borderRadius:10, background:"rgba(7,8,10,0.8)", border:"1px solid var(--bd-1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}><X style={{ width:16, height:16, color:"var(--tx-1)" }} /></button>

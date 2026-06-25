@@ -82,22 +82,22 @@ export default function DashboardPage() {
         }
       />
 
-      {/* KPI Grid */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+      {/* KPI Grid — responsive: 4 cols desktop, 2 cols tablet, 1 col mobile */}
+      <div className="kpi-grid" style={{marginBottom:20}}>
         <KpiCard label="Inventory Value" value={kpi.inventoryValue} change={kpi.inventoryChange} icon={<Package className="w-4 h-4" />} />
         <KpiCard label="Active Orders"   value={kpi.activeOrders.toLocaleString()} change={kpi.ordersChange} icon={<ShoppingCart className="w-4 h-4" />} color="#3b82f6" />
         <KpiCard label="Revenue MTD"     value={kpi.revenue} change={kpi.revenueChange} icon={<TrendingUp className="w-4 h-4" />} color="#a855f7" />
         <KpiCard label="Deliveries"      value={kpi.delivered.toLocaleString()} change={kpi.deliveredChange} icon={<Truck className="w-4 h-4" />} color="#22c55e" />
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+      <div className="kpi-grid" style={{marginBottom:24}}>
         <KpiCard label="Pharmacies"       value={kpi.pharmacies.toLocaleString()} change={kpi.pharmaciesChange} icon={<Store className="w-4 h-4" />} color="#f59e0b" />
         <KpiCard label="PPMVs Connected"  value={kpi.ppMVs.toLocaleString()} change={kpi.ppMVsChange} icon={<BarChart2 className="w-4 h-4" />} color="#14b88e" />
         <KpiCard label="Low Stock Alerts" value={kpi.lowStock} icon={<AlertTriangle className="w-4 h-4" />} color="#f43f5e" sub="Needs attention" />
         <KpiCard label="Expiring (30d)"   value={kpi.expiring} change={kpi.expiringChange} icon={<AlertTriangle className="w-4 h-4" />} color="#f59e0b" />
       </div>
 
-      {/* Charts row */}
-      <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:16,marginBottom:20}}>
+      {/* Charts row — responsive: 2fr/1fr desktop, stacks to 1 col on mobile */}
+      <div className="charts-row" style={{marginBottom:20}}>
         <div className="card">
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
             <div>
@@ -138,8 +138,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Tables row */}
-      <div style={{display:"grid",gridTemplateColumns:"3fr 2fr",gap:16}}>
+      {/* Tables row — responsive: 3fr/2fr desktop, stacks to 1 col on mobile, tables scroll horizontally */}
+      <div className="tables-row">
         <div className="card" style={{padding:0}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",borderBottom:"1px solid var(--bd-1)"}}>
             <p style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:13,color:"var(--tx-1)"}}>Recent Orders</p>
@@ -147,20 +147,22 @@ export default function DashboardPage() {
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <table className="kx-table">
-            <thead><tr><th>Order ID</th><th>Customer</th><th>Value</th><th>Status</th><th>ETA</th></tr></thead>
-            <tbody>
-              {recentOrders.map((o: {id:string;customer?:string;value?:string;status?:string;eta?:string}) => (
-                <tr key={o.id}>
-                  <td><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:"var(--k)"}}>{o.id}</span></td>
-                  <td><span style={{fontSize:12}}>{o.customer}</span></td>
-                  <td><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,fontWeight:500}}>{o.value}</span></td>
-                  <td><StatusBadge status={o.status ?? ""} /></td>
-                  <td><span style={{fontSize:11,color:"var(--tx-3)"}}>{o.eta}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{overflowX:"auto"}}>
+            <table className="kx-table" style={{minWidth:480}}>
+              <thead><tr><th>Order ID</th><th>Customer</th><th>Value</th><th>Status</th><th>ETA</th></tr></thead>
+              <tbody>
+                {recentOrders.map((o: {id:string;customer?:string;value?:string;status?:string;eta?:string}) => (
+                  <tr key={o.id}>
+                    <td><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,color:"var(--k)"}}>{o.id}</span></td>
+                    <td><span style={{fontSize:12}}>{o.customer}</span></td>
+                    <td><span style={{fontFamily:"'DM Mono',monospace",fontSize:12,fontWeight:500}}>{o.value}</span></td>
+                    <td><StatusBadge status={o.status ?? ""} /></td>
+                    <td><span style={{fontSize:11,color:"var(--tx-3)"}}>{o.eta}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="card" style={{padding:0}}>
@@ -184,6 +186,41 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        /* ── KPI grid: 4 cols desktop → 2 cols tablet → 1 col mobile ── */
+        .kpi-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+        @media (max-width: 1024px) {
+          .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .kpi-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Charts row: 2fr/1fr desktop → stacked on tablet/mobile ── */
+        .charts-row {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 16px;
+        }
+        @media (max-width: 900px) {
+          .charts-row { grid-template-columns: 1fr; }
+        }
+
+        /* ── Tables row: 3fr/2fr desktop → stacked on tablet/mobile ── */
+        .tables-row {
+          display: grid;
+          grid-template-columns: 3fr 2fr;
+          gap: 16px;
+        }
+        @media (max-width: 900px) {
+          .tables-row { grid-template-columns: 1fr; }
+        }
+      `}</style>
     </div>
   );
 }
