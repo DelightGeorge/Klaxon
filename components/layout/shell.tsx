@@ -46,7 +46,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         display:"flex", flexDirection:"column", minWidth:0,
       }}>
         <Topbar
-          collapsed={isMobile ? true : collapsed}
           onMenuClick={isMobile ? () => setMobileOpen(v => !v) : undefined}
         />
         <main style={{
