@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
         <main style={{
           flex:1,
-          marginTop: 56,
+          
           padding: isMobile ? "16px 14px" : 24,
           minWidth:0,
           overflowX:"hidden",

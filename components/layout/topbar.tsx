@@ -82,11 +82,11 @@ export function Topbar({ collapsed, onMenuClick }: TopbarProps) {
 
   return (
     <header style={{
-      position: "fixed", top: 0, left: collapsed ? 64 : 240, right: 0,
+      position: "sticky", top: 0,
       height: 56, background: "var(--bg-base)", borderBottom: "1px solid var(--bd-1)",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "0 20px", zIndex: 40,
-      transition: "left 0.25s cubic-bezier(0.16,1,0.3,1)",
+      
     }}>
 
       {/* Left: mobile menu button + search */}
@@ -107,7 +107,7 @@ export function Topbar({ collapsed, onMenuClick }: TopbarProps) {
         )}
 
         {/* Search */}
-        <div style={{ position: "relative", width: "clamp(140px, 30vw, 280px)" }}>
+        <div style={{ position: "relative", width: "min(280px, calc(100vw - 220px))" }}>
           <Search style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 13, height: 13, color: "var(--tx-3)", pointerEvents: "none" }} />
           <input
             ref={searchRef}
