@@ -1,22 +1,18 @@
 import { useApi, useMutation } from "./use-api";
 
 export interface Notification {
-  id: string;
-  title?: string;
-  message?: string;
-  read?: boolean;
-  createdAt?: string;
-  type?: string;
+  id: string; title?: string; message?: string; type?: string;
+  priority?: string; isRead?: boolean; link?: string; createdAt?: string;
 }
 
-export function useNotifications() {
-  return useApi<{ notifications?: Notification[]; data?: Notification[] }>("/notifications", { notifications: [] });
+export function useNotifications(unreadOnly = false, page = 1) {
+  return useApi<{ notifications?: Notification[]; total?: number; unreadCount?: number }>(
+    "/notifications", {}, { page, limit: 20, unreadOnly }
+  );
 }
-
 export function useUnreadCount() {
-  return useApi<{ count?: number }>("/notifications/unread-count", { count: 0 });
+  return useApi<{ unreadCount?: number }>("/notifications/unread-count", {});
 }
-
-export function useMarkAllRead() {
-  return useMutation<void, void>("patch", "/notifications/read-all");
-}
+export function useMarkAllRead() { return useMutation<void, { message: string }>("patch", "/notifications/read-all"); }
+export function useMarkRead(id: string) { return useMutation<void, { count: number }>("patch", `/notifications/${id}/read`); }
+export function useDeleteNotification(id: string) { return useMutation<void, { message: string }>("delete", `/notifications/${id}`); }
