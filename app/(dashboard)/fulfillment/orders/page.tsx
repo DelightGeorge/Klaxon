@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useOrders, useUpdateOrderStatus, useCancelOrder, type SalesOrder } from "@/lib/hooks/use-orders";
 import { useFulfillmentStats } from "@/lib/hooks/use-orders";
-import { ShoppingCart, Loader2, RefreshCw, ChevronDown, X, Truck, Package } from "lucide-react";
+import { ShoppingCart, Loader2, RefreshCw, ChevronDown, X } from "lucide-react";
 
 const STATUSES = ["All","DRAFT","CONFIRMED","PROCESSING","READY_FOR_DISPATCH","DISPATCHED","IN_TRANSIT","DELIVERED","CANCELLED"];
 const STATUS_FLOW: Record<string, string[]> = {
@@ -32,8 +32,7 @@ export default function FulfillmentOrdersPage() {
 
   const handleStatusChange = async (order: SalesOrder, newStatus: string) => {
     setUpdating(order.id);
-    const hook = useUpdateOrderStatus(order.id);
-    await hook.mutate({ status: newStatus });
+    await updateStatus.mutate({ status: newStatus });
     refetch(); setUpdating(null); setSelected(null);
   };
 

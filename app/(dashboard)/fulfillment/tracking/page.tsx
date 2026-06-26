@@ -14,7 +14,6 @@ const DELIVERY_FLOW: Record<string,string[]> = {
 
 export default function TrackingPage() {
   const [statusFilter, setStatusFilter] = useState<string|undefined>(undefined);
-  const [selected, setSelected] = useState<Delivery|null>(null);
   const [updateForm, setUpdateForm] = useState<{deliveryId:string;status:string;location:string;notes:string;receivedBy:string}|null>(null);
   const { data, loading, refetch } = useDeliveries(statusFilter);
   const deliveries = Array.isArray(data) ? data : [];

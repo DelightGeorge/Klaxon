@@ -8,7 +8,6 @@ import { CheckCircle, XCircle, Loader2, RefreshCw } from "lucide-react";
 export default function ApprovalsPage() {
   const { data, loading, refetch } = usePurchaseOrders({ status: "PENDING_APPROVAL" });
   const orders = data?.orders ?? [];
-  const [actionId, setActionId] = useState<string|null>(null);
   const [comments, setComments] = useState("");
   const [modalOrder, setModalOrder] = useState<PurchaseOrder|null>(null);
   const [decision, setDecision] = useState<"APPROVED"|"REJECTED">("APPROVED");

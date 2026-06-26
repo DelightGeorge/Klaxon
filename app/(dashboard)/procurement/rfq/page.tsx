@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useRFQs, useCloseRFQ, type RFQ } from "@/lib/hooks/use-procurement";
@@ -9,14 +9,23 @@ const STATUSES = ["All","OPEN","RESPONDED","CLOSED","CANCELLED"];
 
 export default function RFQPage() {
   const [statusFilter, setStatusFilter] = useState("All");
-  const [closing, setClosing] = useState<string|null>(null);
+  const [closingId, setClosingId] = useState<string|null>(null);
   const { data, loading, refetch } = useRFQs(statusFilter==="All"?undefined:statusFilter);
   const rfqs = Array.isArray(data) ? data : [];
 
-  const handleClose = async (id: string) => {
-    setClosing(id);
-    await useCloseRFQ(id).mutate();
-    refetch(); setClosing(null);
+  const closeRFQ = useCloseRFQ(closingId ?? "");
+
+  useEffect(() => {
+    if (!closingId) return;
+    closeRFQ.mutate().then(() => {
+      refetch();
+      setClosingId(null);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [closingId]);
+
+  const handleClose = (id: string) => {
+    setClosingId(id);
   };
 
   return (
@@ -62,8 +71,8 @@ export default function RFQPage() {
                   </div>
                 </div>
                 {r.status==="OPEN"&&(
-                  <button onClick={()=>handleClose(r.id)} disabled={closing===r.id} className="btn-secondary btn-sm" style={{color:"#f43f5e"}}>
-                    {closing===r.id?<Loader2 style={{width:13,height:13}} className="animate-spin"/>:<X style={{width:13,height:13}}/>} Close RFQ
+                  <button onClick={()=>handleClose(r.id)} disabled={closingId===r.id} className="btn-secondary btn-sm" style={{color:"#f43f5e"}}>
+                    {closingId===r.id?<Loader2 style={{width:13,height:13}} className="animate-spin"/>:<X style={{width:13,height:13}}/>} Close RFQ
                   </button>
                 )}
               </div>
