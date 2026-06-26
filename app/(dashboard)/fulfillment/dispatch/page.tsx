@@ -11,7 +11,7 @@ export default function DispatchPage() {
   const approve = useApproveDispatch();
   const createDelivery = useCreateDelivery();
   const [actionId, setActionId] = useState<string|null>(null);
-  const [deliveryForm, setDeliveryForm] = useState<{orderId:string;carrier:string;trackingNumber:string;driverName:string;driverPhone:string;estimatedDeliveryDate:string}|null>(null);
+  const [deliveryForm, setDeliveryForm] = useState<{salesOrderId:string;carrier:string;trackingNumber:string;driverName:string;driverPhone:string;estimatedDeliveryDate:string}|null>(null);
 
   const handleApprove = async (orderId: string) => {
     setActionId(orderId);
@@ -57,7 +57,7 @@ export default function DispatchPage() {
                   {o.deliveryAddress && <p style={{fontSize:11,color:"var(--tx-3)",marginTop:4}}>📍 {o.deliveryAddress}</p>}
                 </div>
                 <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>setDeliveryForm({orderId:o.id,carrier:"",trackingNumber:"",driverName:"",driverPhone:"",estimatedDeliveryDate:""})}
+                  <button onClick={()=>setDeliveryForm({salesOrderId:o.id,carrier:"",trackingNumber:"",driverName:"",driverPhone:"",estimatedDeliveryDate:""})}
                     className="btn-secondary btn-sm"><Plus style={{width:13,height:13}}/> Create Delivery</button>
                   <button onClick={()=>handleApprove(o.id)} disabled={actionId===o.id} className="btn-primary btn-sm">
                     {actionId===o.id?<Loader2 style={{width:13,height:13}} className="animate-spin"/>:<CheckCircle style={{width:13,height:13}}/>} Approve
