@@ -31,14 +31,46 @@ type Product = {
   price?: string | number;
 };
 
-const CATS = [
-  "All",
-  "Analgesic",
-  "Antibiotic",
-  "Antidiabetic",
-  "Antihypertensive",
-  "Antimalarial",
+// These match the real backend enum values for POST /products.
+// Display labels are Title Case for the UI; the `value` sent to the API
+// is the exact enum string the backend expects.
+const CATEGORY_OPTIONS = [
+  { label: "Antibiotic",        value: "ANTIBIOTIC" },
+  { label: "Analgesic",         value: "ANALGESIC" },
+  { label: "Antiviral",         value: "ANTIVIRAL" },
+  { label: "Antifungal",        value: "ANTIFUNGAL" },
+  { label: "Antihypertensive",  value: "ANTIHYPERTENSIVE" },
+  { label: "Antidiabetic",      value: "ANTIDIABETIC" },
+  { label: "Antiparasitic",     value: "ANTIPARASITIC" },
+  { label: "Vitamin",           value: "VITAMIN" },
+  { label: "Vaccine",           value: "VACCINE" },
+  { label: "Contraceptive",     value: "CONTRACEPTIVE" },
+  { label: "Cardiovascular",    value: "CARDIOVASCULAR" },
+  { label: "Respiratory",       value: "RESPIRATORY" },
+  { label: "Gastrointestinal",  value: "GASTROINTESTINAL" },
+  { label: "Dermatological",    value: "DERMATOLOGICAL" },
+  { label: "Psychotropic",      value: "PSYCHOTROPIC" },
+  { label: "Diagnostic",        value: "DIAGNOSTIC" },
+  { label: "Surgical",          value: "SURGICAL" },
+  { label: "Other",             value: "OTHER" },
 ];
+
+const TYPE_OPTIONS = [
+  { label: "OTC",          value: "OTC" },
+  { label: "Prescription", value: "PRESCRIPTION" },
+  { label: "Controlled",   value: "CONTROLLED" },
+  { label: "Device",       value: "DEVICE" },
+  { label: "Diagnostic",   value: "DIAGNOSTIC" },
+];
+
+const DOSAGE_FORM_OPTIONS = [
+  "TABLET", "CAPSULE", "SYRUP", "INJECTION", "CREAM", "OINTMENT",
+  "DROPS", "INHALER", "SUPPOSITORY", "PATCH", "POWDER", "SOLUTION", "SUSPENSION", "OTHER",
+];
+
+// Filter chips on the page itself stay Title Case for readability —
+// these map 1:1 to CATEGORY_OPTIONS labels above (minus "All").
+const CATS = ["All", ...CATEGORY_OPTIONS.map(c => c.label)];
 
 const columns: Col<Product>[] = [
   {
@@ -160,6 +192,16 @@ const columns: Col<Product>[] = [
   },
 ];
 
+// FIXED: now posts to the real backend endpoint POST /products with the
+// exact field names + enum values the API expects, instead of the
+// nonexistent /pharmacy/drugs route with free-text category/sku/batch
+// fields the backend doesn't recognize. Product creation (this form)
+// and stock creation (batch/quantity/warehouse) are two separate backend
+// calls — POST /products creates the catalogue entry, and a follow-up
+// POST /inventory/stock/add is what actually puts stock + a batch +
+// expiry date into a warehouse. This modal now only creates the product;
+// adding the first batch of stock is a natural next step but kept out of
+// scope here so the fix stays focused on the broken endpoint call.
 function AddProductModal({
   onClose,
   onSuccess,
@@ -169,15 +211,17 @@ function AddProductModal({
 }) {
   const [form, setForm] = useState({
     name: "",
-    sku: "",
-    gtin: "",
-    batch: "",
-    expiry: "",
-    quantity: "",
-    warehouse: "",
-    supplier: "",
-    category: "Analgesic",
-    price: "",
+    genericName: "",
+    brand: "",
+    manufacturer: "",
+    category: CATEGORY_OPTIONS[0].value,
+    type: TYPE_OPTIONS[0].value,
+    dosageForm: DOSAGE_FORM_OPTIONS[0],
+    strength: "",
+    unit: "",
+    unitPrice: "",
+    nafdacNumber: "",
+    requiresPrescription: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -192,10 +236,19 @@ function AddProductModal({
     setLoading(true);
     setError("");
     try {
-      await api.post("/pharmacy/drugs", {
-        ...form,
-        quantity: Number(form.quantity),
-        price: Number(form.price),
+      await api.post("/products", {
+        name: form.name,
+        genericName: form.genericName || undefined,
+        brand: form.brand || undefined,
+        manufacturer: form.manufacturer || undefined,
+        category: form.category,
+        type: form.type,
+        dosageForm: form.dosageForm,
+        strength: form.strength || undefined,
+        unit: form.unit,
+        unitPrice: Number(form.unitPrice),
+        nafdacNumber: form.nafdacNumber || undefined,
+        requiresPrescription: form.requiresPrescription,
       });
       onSuccess();
       onClose();
@@ -228,7 +281,9 @@ function AddProductModal({
           borderRadius: 20,
           padding: 32,
           width: "100%",
-          maxWidth: 520,
+          maxWidth: 560,
+          maxHeight: "90vh",
+          overflowY: "auto",
           border: "1px solid var(--bd-1)",
           boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
         }}
@@ -253,7 +308,7 @@ function AddProductModal({
               Add Product
             </h2>
             <p style={{ fontSize: 12, color: "var(--tx-3)", marginTop: 2 }}>
-              Add a new drug to inventory
+              Add a new drug to the product catalogue
             </p>
           </div>
           <button
@@ -289,70 +344,106 @@ function AddProductModal({
           onSubmit={handleSubmit}
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
         >
-          {[
-            { label: "Drug Name", key: "name", type: "text", full: true },
-            { label: "SKU", key: "sku", type: "text" },
-            { label: "GTIN", key: "gtin", type: "text" },
-            { label: "Batch Number", key: "batch", type: "text" },
-            { label: "Expiry Date", key: "expiry", type: "date" },
-            { label: "Quantity", key: "quantity", type: "number" },
-            { label: "Unit Price (₦)", key: "price", type: "number" },
-            { label: "Warehouse", key: "warehouse", type: "text" },
-            { label: "Supplier", key: "supplier", type: "text" },
-          ].map((f) => (
-            <div
-              key={f.key}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-                gridColumn: f.full ? "1 / -1" : "auto",
-              }}
-            >
-              <label
-                style={{
-                  fontSize: 11,
-                  fontFamily: "'DM Mono',monospace",
-                  color: "var(--tx-3)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                {f.label}
-              </label>
-              <input
-                type={f.type}
-                value={form[f.key as keyof typeof form]}
-                onChange={update(f.key)}
-                className="kx-input"
-                required
-              />
-            </div>
-          ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, gridColumn: "1 / -1" }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Drug Name
+            </label>
+            <input type="text" value={form.name} onChange={update("name")} className="kx-input" required />
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label
-              style={{
-                fontSize: 11,
-                fontFamily: "'DM Mono',monospace",
-                color: "var(--tx-3)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Generic Name
+            </label>
+            <input type="text" value={form.genericName} onChange={update("genericName")} className="kx-input" placeholder="e.g. Acetaminophen" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Brand
+            </label>
+            <input type="text" value={form.brand} onChange={update("brand")} className="kx-input" placeholder="e.g. Panadol" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Manufacturer
+            </label>
+            <input type="text" value={form.manufacturer} onChange={update("manufacturer")} className="kx-input" placeholder="e.g. GSK Nigeria" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              NAFDAC Number
+            </label>
+            <input type="text" value={form.nafdacNumber} onChange={update("nafdacNumber")} className="kx-input" placeholder="e.g. A4-0012" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Category
             </label>
-            <select
-              value={form.category}
-              onChange={update("category")}
-              className="kx-input"
-            >
-              {CATS.filter((c) => c !== "All").map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+            <select value={form.category} onChange={update("category")} className="kx-input">
+              {CATEGORY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Type
+            </label>
+            <select value={form.type} onChange={update("type")} className="kx-input">
+              {TYPE_OPTIONS.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Dosage Form
+            </label>
+            <select value={form.dosageForm} onChange={update("dosageForm")} className="kx-input">
+              {DOSAGE_FORM_OPTIONS.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Strength
+            </label>
+            <input type="text" value={form.strength} onChange={update("strength")} className="kx-input" placeholder="e.g. 500mg" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Unit
+            </label>
+            <input type="text" value={form.unit} onChange={update("unit")} className="kx-input" placeholder="e.g. tablets" required />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <label style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: "var(--tx-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Unit Price (₦)
+            </label>
+            <input type="number" value={form.unitPrice} onChange={update("unitPrice")} className="kx-input" required />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, gridColumn: "1 / -1", marginTop: 4 }}>
+            <input
+              type="checkbox"
+              id="requiresPrescription"
+              checked={form.requiresPrescription}
+              onChange={(e) => setForm(v => ({ ...v, requiresPrescription: e.target.checked }))}
+              style={{ width: 16, height: 16, accentColor: "var(--k)" }}
+            />
+            <label htmlFor="requiresPrescription" style={{ fontSize: 12, color: "var(--tx-2)" }}>
+              Requires a valid prescription
+            </label>
           </div>
 
           <div

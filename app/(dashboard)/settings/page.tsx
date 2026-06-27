@@ -3,32 +3,43 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useAuthStore } from "@/lib/auth-store";
 import { useActiveSessions, useRevokeSession } from "@/lib/hooks/use-users";
-import { api } from "@/lib/api";
-import { User, Lock, Monitor, Loader2, CheckCircle, LogOut, Shield } from "lucide-react";
+import { User, Lock, Monitor, LogOut, Shield, Mail } from "lucide-react";
 
 export default function SettingsPage() {
   const user = useAuthStore(s => s.user);
   const [tab, setTab] = useState<"profile"|"password"|"sessions">("profile");
-  const [pwForm, setPwForm] = useState({ currentPassword:"", newPassword:"", confirm:"" });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [pwError, setPwError] = useState("");
   const { data: sessionsData, refetch } = useActiveSessions();
   const sessions = sessionsData?.sessions ?? [];
   const revokeSession = useRevokeSession();
 
-  const handlePasswordChange = async (e:React.FormEvent) => {
-    e.preventDefault();
-    if (pwForm.newPassword !== pwForm.confirm) { setPwError("Passwords do not match"); return; }
-    setSaving(true); setPwError("");
+  // NOTE: The backend has no in-session "change password" endpoint
+  // (POST /auth/change-password does not exist in the API). The only
+  // documented password-reset flow is the email/token-based one:
+  //   POST /auth/forgot-password  → sends a reset link
+  //   POST /auth/reset-password   → { token, newPassword }
+  // Rather than call a route that 404s, this tab now sends the person
+  // through that real flow. If a backend in-session change-password
+  // route gets added later, swap this back to a direct form + api.post.
+  const handleRequestReset = async () => {
+    if (!user?.email) return;
+    setRequesting(true);
+    setRequestError("");
     try {
-      await api.post("/auth/change-password", { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword });
-      setSaved(true); setPwForm({ currentPassword:"", newPassword:"", confirm:"" });
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e:unknown) {
-      setPwError((e as {response?:{data?:{message?:string}}})?.response?.data?.message ?? "Failed to update password");
-    } finally { setSaving(false); }
+      const { api } = await import("@/lib/api");
+      await api.post("/auth/forgot-password", { email: user.email });
+      setRequestSent(true);
+    } catch (e: unknown) {
+      setRequestError(
+        (e as { response?: { data?: { message?: string } } })?.response?.data?.message
+          ?? "Failed to send reset link"
+      );
+    } finally {
+      setRequesting(false);
+    }
   };
+  const [requesting, setRequesting] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [requestError, setRequestError] = useState("");
 
   const handleRevoke = async (id: string) => {
     await revokeSession.mutate(undefined, `/auth/sessions/${id}`);
@@ -77,34 +88,33 @@ export default function SettingsPage() {
       )}
 
       {tab==="password" && (
-        <div className="card" style={{maxWidth:400}}>
-          <h3 style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:15,color:"var(--tx-1)",marginBottom:16}}>Change Password</h3>
-          {saved && (
+        <div className="card" style={{maxWidth:440}}>
+          <h3 style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:15,color:"var(--tx-1)",marginBottom:8}}>Change Password</h3>
+          <p style={{fontSize:12,color:"var(--tx-3)",lineHeight:1.6,marginBottom:16}}>
+            There&apos;s no in-app password change yet — we&apos;ll email you a secure reset link instead.
+            Click the button below and follow the link sent to <strong style={{color:"var(--tx-1)"}}>{user?.email ?? "your email"}</strong>.
+          </p>
+
+          {requestSent && (
             <div style={{padding:"10px 14px",borderRadius:10,background:"rgba(20,184,142,0.08)",border:"1px solid var(--bd-k)",color:"var(--k)",fontSize:12,marginBottom:16,display:"flex",alignItems:"center",gap:6}}>
-              <CheckCircle style={{width:13,height:13}}/> Password updated successfully
+              <Mail style={{width:13,height:13}}/> Reset link sent — check your inbox.
             </div>
           )}
-          {pwError && (
+          {requestError && (
             <div style={{padding:"10px 14px",borderRadius:10,background:"rgba(244,63,94,0.08)",border:"1px solid rgba(244,63,94,0.2)",color:"#f43f5e",fontSize:12,marginBottom:16}}>
-              {pwError}
+              {requestError}
             </div>
           )}
-          <form onSubmit={handlePasswordChange} style={{display:"flex",flexDirection:"column",gap:12}}>
-            {[
-              {label:"Current Password",key:"currentPassword"},
-              {label:"New Password",key:"newPassword"},
-              {label:"Confirm New Password",key:"confirm"},
-            ].map(f=>(
-              <div key={f.key} style={{display:"flex",flexDirection:"column",gap:4}}>
-                <label style={{fontSize:11,fontFamily:"'DM Mono',monospace",color:"var(--tx-3)",textTransform:"uppercase",letterSpacing:"0.06em"}}>{f.label}</label>
-                <input type="password" value={pwForm[f.key as keyof typeof pwForm]} onChange={e=>setPwForm(v=>({...v,[f.key]:e.target.value}))} className="kx-input" required/>
-              </div>
-            ))}
-            <button type="submit" disabled={saving} className="btn-primary btn-sm" style={{marginTop:4,justifyContent:"center"}}>
-              {saving?<Loader2 style={{width:13,height:13}} className="animate-spin"/>:<Lock style={{width:13,height:13}}/>}
-              {saving?"Updating...":"Update Password"}
-            </button>
-          </form>
+
+          <button
+            onClick={handleRequestReset}
+            disabled={requesting || !user?.email}
+            className="btn-primary btn-sm"
+            style={{justifyContent:"center", width:"100%"}}
+          >
+            <Mail style={{width:13,height:13}}/>
+            {requesting ? "Sending…" : "Send Password Reset Link"}
+          </button>
         </div>
       )}
 
