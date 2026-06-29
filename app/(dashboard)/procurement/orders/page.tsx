@@ -14,7 +14,7 @@ export default function ProcurementOrdersPage() {
 
   return (
     <div>
-      <PageHeader title="Purchase Orders" subtitle={`${data?.total??0} total orders`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="Purchase Orders" subtitle={`${data?.total??0} total orders`}
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>}/>
 
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>

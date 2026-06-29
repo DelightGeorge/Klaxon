@@ -30,7 +30,7 @@ export default function RFQPage() {
 
   return (
     <div>
-      <PageHeader title="Request for Quotation" subtitle={`${rfqs.length} RFQs`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="Request for Quotation" subtitle={`${rfqs.length} RFQs`}
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>}/>
 
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>

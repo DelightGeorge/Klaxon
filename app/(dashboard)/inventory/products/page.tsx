@@ -506,7 +506,7 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <PageHeader
+      <PageHeader badge="LIVE" badgeVariant="live"
         title="Drug Inventory"
         subtitle={`${products.length} products tracked across all warehouses`}
         action={

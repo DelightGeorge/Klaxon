@@ -17,7 +17,7 @@ export default function DispatchPage() {
   const pending = MOCK_ORDERS.filter(o => o.status === "Processing");
   return (
     <div>
-      <PageHeader title="Dispatch Management" subtitle={`${pending.length} orders ready to dispatch`}/>
+      <PageHeader badge="DEMO" badgeVariant="demo" title="Dispatch Management" subtitle={`${pending.length} orders ready to dispatch`}/>
       <DataTable columns={cols} data={pending}/>
     </div>
   );

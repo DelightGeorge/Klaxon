@@ -37,7 +37,7 @@ export default function RecallsPage() {
 
   return (
     <div>
-      <PageHeader title="Product Recalls" subtitle={`${recalls.length} recalls`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="Product Recalls" subtitle={`${recalls.length} recalls`}
         action={
           <div style={{display:"flex",gap:8}}>
             <button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>

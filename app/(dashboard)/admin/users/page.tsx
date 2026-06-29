@@ -491,7 +491,7 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <PageHeader
+      <PageHeader badge="LIVE" badgeVariant="live"
         title="User Management"
         subtitle={`${users.length} platform users`}
         action={

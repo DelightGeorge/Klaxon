@@ -16,7 +16,7 @@ const cols: Col<P>[] = [
 export default function PPMVAnalyticsPage() {
   return (
     <div>
-      <PageHeader title="PPMV Analytics" subtitle="Performance metrics for local medicine vendors"/>
+      <PageHeader badge="DEMO" badgeVariant="demo" title="PPMV Analytics" subtitle="Performance metrics for local medicine vendors"/>
       <DataTable columns={cols} data={MOCK_PPMV}/>
     </div>
   );

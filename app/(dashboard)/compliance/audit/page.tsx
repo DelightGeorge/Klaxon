@@ -12,7 +12,7 @@ export default function AuditPage() {
 
   return (
     <div>
-      <PageHeader title="Audit Logs" subtitle={`${data?.total??0} total events`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="Audit Logs" subtitle={`${data?.total??0} total events`}
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>}/>
 
       <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>

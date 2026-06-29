@@ -9,6 +9,16 @@ import {
   ChevronDown, ClipboardList, BarChart2, ShoppingBag,
 } from "lucide-react";
 import { KlaxonMark } from "./klaxon-mark";
+import { useAuthStore } from "@/lib/auth-store";
+
+// Roles exactly as defined by the backend (see API reference doc).
+// SUPER_ADMIN and ORG_ADMIN are treated as "see everything" below,
+// independent of this list, since they're platform/org-wide admins.
+type Role =
+  | "SUPER_ADMIN" | "ORG_ADMIN" | "MANUFACTURER" | "DISTRIBUTOR"
+  | "WAREHOUSE_MANAGER" | "PHARMACY_ADMIN" | "HOSPITAL_PHARMACIST"
+  | "PPMV_OPERATOR" | "TELEHEALTH_PROVIDER" | "LOGISTICS_COORDINATOR"
+  | "AUDITOR";
 
 interface NavItem {
   icon: React.ComponentType<{ style?: React.CSSProperties }>;
@@ -17,12 +27,21 @@ interface NavItem {
   external?: boolean;
   badge?: string;
   children?: { label: string; href: string }[];
+  /**
+   * Which roles can see this nav section. Omit entirely to show to
+   * everyone (e.g. Dashboard, Settings). SUPER_ADMIN/ORG_ADMIN always
+   * see every section regardless of what's listed here — see
+   * `canSee()` below.
+   */
+  roles?: Role[];
 }
 
 const NAV: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" }, // visible to all roles
+
   {
     icon: Package, label: "Inventory",
+    roles: ["WAREHOUSE_MANAGER", "MANUFACTURER", "DISTRIBUTOR", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
     children: [
       { label: "Products",       href: "/inventory/products" },
       { label: "Batches",        href: "/inventory/batches" },
@@ -33,6 +52,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: QrCode, label: "GTIN & Barcode",
+    roles: ["MANUFACTURER", "WAREHOUSE_MANAGER", "AUDITOR"],
     children: [
       { label: "GTIN Manager",  href: "/gtin/manager" },
       { label: "Generator",     href: "/gtin/generator" },
@@ -42,6 +62,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: ClipboardList, label: "Procurement",
+    roles: ["DISTRIBUTOR", "PHARMACY_ADMIN", "WAREHOUSE_MANAGER", "MANUFACTURER"],
     children: [
       { label: "Dashboard",  href: "/procurement/dashboard" },
       { label: "Suppliers",  href: "/procurement/suppliers" },
@@ -52,6 +73,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Truck, label: "Fulfillment",
+    roles: ["DISTRIBUTOR", "WAREHOUSE_MANAGER", "LOGISTICS_COORDINATOR"],
     children: [
       { label: "Dashboard", href: "/fulfillment/dashboard" },
       { label: "Orders",    href: "/fulfillment/orders" },
@@ -61,6 +83,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: TrendingUp, label: "Sales",
+    roles: ["DISTRIBUTOR", "PHARMACY_ADMIN", "MANUFACTURER", "AUDITOR"],
     children: [
       { label: "Dashboard", href: "/sales/dashboard" },
       { label: "Products",  href: "/sales/products" },
@@ -71,6 +94,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Stethoscope, label: "Telehealth",
+    roles: ["TELEHEALTH_PROVIDER", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
     children: [
       { label: "Dashboard",      href: "/telehealth/dashboard" },
       { label: "Prescriptions",  href: "/telehealth/prescriptions" },
@@ -79,6 +103,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Store, label: "PPMV Portal",
+    roles: ["PPMV_OPERATOR", "DISTRIBUTOR"],
     children: [
       { label: "Dashboard",  href: "/ppmv/dashboard" },
       { label: "Inventory",  href: "/ppmv/inventory" },
@@ -87,6 +112,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: ShieldCheck, label: "Compliance",
+    roles: ["AUDITOR", "MANUFACTURER"],
     children: [
       { label: "Dashboard",     href: "/compliance/dashboard" },
       { label: "Audit Logs",    href: "/compliance/audit" },
@@ -94,9 +120,10 @@ const NAV: NavItem[] = [
       { label: "Traceability",  href: "/compliance/traceability" },
     ],
   },
-  { icon: BarChart2, label: "Reports", href: "/reports" },
+  { icon: BarChart2, label: "Reports", href: "/reports", roles: ["AUDITOR", "DISTRIBUTOR", "PHARMACY_ADMIN", "MANUFACTURER"] },
   {
     icon: Code2, label: "API & Integrations",
+    roles: [], // platform-admin only — SUPER_ADMIN/ORG_ADMIN see it via the always-visible rule, no operational role needs it
     children: [
       { label: "Dashboard",  href: "/api/dashboard" },
       { label: "API Keys",   href: "/api/keys" },
@@ -105,6 +132,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Users, label: "Admin",
+    roles: [], // platform-admin only — same as above
     children: [
       { label: "Users",          href: "/admin/users" },
       { label: "Roles",          href: "/admin/roles" },
@@ -115,6 +143,7 @@ const NAV: NavItem[] = [
   {
     icon: ShoppingBag, label: "Medicine Shop",
     href: "/shop", badge: "NEW",
+    roles: ["PPMV_OPERATOR", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
   },
 ];
 
@@ -127,6 +156,7 @@ export function Sidebar({ onCollapsedChange, onNavigate }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const pathname = usePathname();
+  const userRoles = useAuthStore(s => s.user?.roles ?? []);
 
   useEffect(() => { onNavigate?.(); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -142,6 +172,19 @@ export function Sidebar({ onCollapsedChange, onNavigate }: SidebarProps) {
     if (item.href) return isActive(item.href);
     return item.children?.some(c => isActive(c.href)) ?? false;
   };
+
+  // SUPER_ADMIN and ORG_ADMIN always see every nav section, since they're
+  // platform/org-wide administrators. Everyone else only sees sections
+  // whose `roles` list includes one of their roles. A section with no
+  // `roles` field at all (undefined) is visible to everyone — used for
+  // universal items like Dashboard and Settings.
+  const canSee = (item: NavItem) => {
+    if (userRoles.includes("SUPER_ADMIN") || userRoles.includes("ORG_ADMIN")) return true;
+    if (!item.roles) return true; // no restriction declared
+    return item.roles.some(r => userRoles.includes(r));
+  };
+
+  const visibleNav = NAV.filter(canSee);
 
   return (
     <aside style={{
@@ -160,7 +203,7 @@ export function Sidebar({ onCollapsedChange, onNavigate }: SidebarProps) {
 
       {/* Nav */}
       <nav style={{ flex:1, padding:"10px 8px", display:"flex", flexDirection:"column", gap:1, overflowY:"auto", overflowX:"hidden" }}>
-        {NAV.map((item) => {
+        {visibleNav.map((item) => {
           const active = sectionActive(item);
           const Icon = item.icon;
           const hasChildren = !!item.children;

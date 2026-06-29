@@ -29,7 +29,7 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <PageHeader
+      <PageHeader badge="LIVE" badgeVariant="live"
         title="Notifications"
         subtitle={`${unread} unread notification${unread !== 1 ? "s" : ""}`}
         action={

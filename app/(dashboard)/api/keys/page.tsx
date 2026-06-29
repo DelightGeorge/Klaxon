@@ -11,7 +11,7 @@ export default function ApiKeysPage() {
 
   return (
     <div>
-      <PageHeader title="API Keys" subtitle="Manage programmatic access to the Klaxon API"
+      <PageHeader badge="DEMO" badgeVariant="demo" title="API Keys" subtitle="Manage programmatic access to the Klaxon API"
         action={<button className="btn-primary btn-sm"><Plus className="w-3.5 h-3.5"/>Generate Key</button>} />
 
       <div style={{marginBottom:16,padding:"12px 16px",borderRadius:12,background:"rgba(20,184,142,0.06)",border:"1px solid var(--bd-k)"}}>

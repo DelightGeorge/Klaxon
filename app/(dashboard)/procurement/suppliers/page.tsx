@@ -25,7 +25,7 @@ export default function SuppliersPage() {
 
   return (
     <div>
-      <PageHeader title="Suppliers" subtitle={`${suppliers.length} registered suppliers`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="Suppliers" subtitle={`${suppliers.length} registered suppliers`}
         action={<button onClick={()=>setShowAdd(true)} className="btn-primary btn-sm"><Plus style={{width:13,height:13}}/> Add Supplier</button>}/>
 
       <div style={{position:"relative",marginBottom:16,maxWidth:360}}>

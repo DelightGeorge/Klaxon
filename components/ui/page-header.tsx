@@ -1,24 +1,26 @@
 // components/ui/page-header.tsx
 
-type BadgeVariant = "k" | "green" | "amber" | "ink" | "red" | "blue";
-
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
   badge?: string;
-  /** Controls the badge colour. Defaults to "k" (brand teal).
-   *  Pass "green" for LIVE, "ink" for DEMO, "amber" for LOADING. */
-  badgeVariant?: BadgeVariant;
+  /**
+   * Controls badge styling:
+   * - "live"  → green, this page reads/writes the real backend
+   * - "demo"  → amber/neutral, this page is showing mock data only
+   * - "k"     → default brand green (legacy behavior, e.g. dashboard's "LIVE"/"LOADING")
+   */
+  badgeVariant?: "live" | "demo" | "k";
 }
 
-export function PageHeader({
-  title,
-  subtitle,
-  action,
-  badge,
-  badgeVariant = "k",
-}: PageHeaderProps) {
+const BADGE_CLASS: Record<NonNullable<PageHeaderProps["badgeVariant"]>, string> = {
+  live: "badge-green",
+  demo: "badge-amber",
+  k: "badge-k",
+};
+
+export function PageHeader({ title, subtitle, action, badge, badgeVariant = "k" }: PageHeaderProps) {
   return (
     <div
       style={{
@@ -33,9 +35,7 @@ export function PageHeader({
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h1 className="page-title">{title}</h1>
-          {badge && (
-            <span className={`badge badge-${badgeVariant}`}>{badge}</span>
-          )}
+          {badge && <span className={`badge ${BADGE_CLASS[badgeVariant]}`}>{badge}</span>}
         </div>
         {subtitle && <p className="page-sub">{subtitle}</p>}
       </div>

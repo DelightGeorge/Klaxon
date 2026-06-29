@@ -54,7 +54,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageHeader title="Settings" subtitle="Manage your account and security"/>
+      <PageHeader badge="LIVE" badgeVariant="live" title="Settings" subtitle="Manage your account and security"/>
 
       <div style={{display:"flex",gap:0,marginBottom:24,borderBottom:"1px solid var(--bd-1)"}}>
         {TABS.map(t=>(

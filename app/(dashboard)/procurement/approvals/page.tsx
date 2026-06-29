@@ -22,7 +22,7 @@ export default function ApprovalsPage() {
 
   return (
     <div>
-      <PageHeader title="PO Approvals" subtitle={`${orders.length} pending approval`}
+      <PageHeader badge="LIVE" badgeVariant="live" title="PO Approvals" subtitle={`${orders.length} pending approval`}
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>}/>
 
       {loading ? (

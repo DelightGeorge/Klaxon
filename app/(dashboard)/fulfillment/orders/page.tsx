@@ -53,7 +53,7 @@ export default function FulfillmentOrdersPage() {
 
   return (
     <div>
-      <PageHeader title="Fulfillment Orders" subtitle="Manage and track all sales orders"
+      <PageHeader badge="LIVE" badgeVariant="live" title="Fulfillment Orders" subtitle="Manage and track all sales orders"
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}} /> Refresh</button>} />
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:10,marginBottom:20}}>

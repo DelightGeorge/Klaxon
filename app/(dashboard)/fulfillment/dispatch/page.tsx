@@ -33,7 +33,7 @@ export default function DispatchPage() {
 
   return (
     <div>
-      <PageHeader title="Dispatch Approvals" subtitle="Review and approve orders ready for dispatch"
+      <PageHeader badge="LIVE" badgeVariant="live" title="Dispatch Approvals" subtitle="Review and approve orders ready for dispatch"
         action={<button onClick={refetch} className="btn-secondary btn-sm"><RefreshCw style={{width:13,height:13}}/> Refresh</button>} />
 
       {loading ? (
