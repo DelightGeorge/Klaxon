@@ -7,15 +7,17 @@ interface PageHeaderProps {
   badge?: string;
   /**
    * Controls badge styling:
-   * - "live"  → green, this page reads/writes the real backend
-   * - "demo"  → amber/neutral, this page is showing mock data only
-   * - "k"     → default brand green (legacy behavior, e.g. dashboard's "LIVE"/"LOADING")
+   * - "live"  ? green, this page reads/writes the real backend
+   * - "demo"  ? amber/neutral, this page is showing mock data only
+   * - "k"     ? default brand green (legacy behavior, e.g. dashboard's "LIVE"/"LOADING")
+   * - "green" ? alias for "live", same styling
    */
   badgeVariant?: "live" | "demo" | "k" | "green";
 }
 
 const BADGE_CLASS: Record<NonNullable<PageHeaderProps["badgeVariant"]>, string> = {
   live: "badge-green",
+  green: "badge-green",
   demo: "badge-amber",
   k: "badge-k",
 };

@@ -9,7 +9,7 @@ export interface Col<T> {
   render?: (row: T) => React.ReactNode;
 }
 
-interface DataTableProps<T extends Record<string, unknown>> {
+interface DataTableProps<T extends object> {
   columns: Col<T>[];
   data: T[];
   searchable?: boolean;
@@ -36,7 +36,7 @@ function Skeleton({ cols }: { cols: number }) {
   );
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object>({
   columns, data, searchable = true, searchKeys, pageSize = 10, loading, emptyMsg = "No data found", onRowClick,
 }: DataTableProps<T>) {
   const [q, setQ] = useState("");
