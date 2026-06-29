@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { PageHeader } from "@/components/ui/page-header";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { useApi } from "@/lib/hooks/use-api";
@@ -164,7 +164,7 @@ export default function SalesDashboardPage() {
                 <YAxis hide />
                 <Tooltip
                   formatter={(v) => [
-                    `₦${(v / 1000000).toFixed(2)}M`,
+                    `₦${(Number(v) / 1000000).toFixed(2)}M`,
                     "Revenue",
                   ]}
                   contentStyle={{
