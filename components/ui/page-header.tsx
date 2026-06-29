@@ -11,7 +11,7 @@ interface PageHeaderProps {
    * - "demo"  → amber/neutral, this page is showing mock data only
    * - "k"     → default brand green (legacy behavior, e.g. dashboard's "LIVE"/"LOADING")
    */
-  badgeVariant?: "live" | "demo" | "k";
+  badgeVariant?: "live" | "demo" | "k" | "green";
 }
 
 const BADGE_CLASS: Record<NonNullable<PageHeaderProps["badgeVariant"]>, string> = {
