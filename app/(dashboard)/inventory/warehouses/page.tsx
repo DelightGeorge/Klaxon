@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -26,13 +26,15 @@ function AddWarehouseModal({
 }) {
   const [form, setForm] = useState({
     name: "",
-    type: "STANDARD",
+    type: "MAIN",
     address: "",
     state: "",
     city: "",
     contactPerson: "",
     phone: "",
+    capacity: "",
     hasColdStorage: false,
+    notes: "",
   });
   const { mutate, loading, error } = useCreateWarehouse();
 
@@ -42,7 +44,10 @@ function AddWarehouseModal({
       setForm((v) => ({ ...v, [k]: e.target.value }));
 
   const handleSubmit = async () => {
-    const result = await mutate(form);
+    const result = await mutate({
+      ...form,
+      capacity: form.capacity ? Number(form.capacity) : undefined,
+    });
     if (result) {
       onSuccess();
       onClose();
@@ -111,6 +116,7 @@ function AddWarehouseModal({
             { label: "City", key: "city" },
             { label: "Contact Person", key: "contactPerson" },
             { label: "Phone", key: "phone" },
+            { label: "Capacity (units)", key: "capacity" },
           ].map((f) => (
             <div
               key={f.key}
@@ -128,9 +134,21 @@ function AddWarehouseModal({
                 {f.label}
               </label>
               <input
-                value={form[f.key as "name" | "address" | "state" | "city" | "contactPerson" | "phone"]}
+                value={
+                  form[
+                    f.key as
+                      | "name"
+                      | "address"
+                      | "state"
+                      | "city"
+                      | "contactPerson"
+                      | "phone"
+                      | "capacity"
+                  ]
+                }
                 onChange={update(f.key)}
                 className="kx-input"
+                type={f.key === "capacity" ? "number" : "text"}
               />
             </div>
           ))}
@@ -151,16 +169,13 @@ function AddWarehouseModal({
               onChange={update("type")}
               className="kx-input"
             >
-              {[
-                "STANDARD",
-                "COLD_STORAGE",
-                "DISTRIBUTION_CENTER",
-                "RETAIL",
-              ].map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, " ")}
-                </option>
-              ))}
+              {["MAIN", "TRANSIT", "COLD_STORAGE", "QUARANTINE", "RETURNS"].map(
+                (t) => (
+                  <option key={t} value={t}>
+                    {t.replace(/_/g, " ")}
+                  </option>
+                ),
+              )}
             </select>
           </div>
           <label
@@ -406,7 +421,7 @@ export default function WarehousesPage() {
                   {
                     icon: WarehouseIcon,
                     label: "Type",
-                    value: (w.type ?? "STANDARD").replace(/_/g, " "),
+                    value: (w.type ?? "MAIN").replace(/_/g, " "),
                   },
                 ].map((item) => (
                   <div
