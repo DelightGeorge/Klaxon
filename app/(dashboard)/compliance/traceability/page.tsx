@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { useProducts } from "@/lib/hooks/use-products";
-import { useApi } from "@/lib/hooks/use-api";
 import { Search, Package, Loader2, GitBranch } from "lucide-react";
 
 interface TraceData {

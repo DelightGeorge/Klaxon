@@ -6,7 +6,6 @@ import { useProducts } from "@/lib/hooks/use-products";
 import {
   useCreateGtin,
   useGenerateBarcode,
-  type GtinRecord,
 } from "@/lib/hooks/use-gtin";
 import { QrCode, Download, Plus, Loader2, X, CheckCircle } from "lucide-react";
 import type { Product } from "@/lib/hooks/use-products";

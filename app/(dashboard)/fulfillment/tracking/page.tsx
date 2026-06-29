@@ -80,7 +80,6 @@ function DeliveryMap({ deliveries }: { deliveries: Delivery[] }) {
   }
 
   // Use OpenStreetMap embed (no API key needed)
-  const encoded = encodeURIComponent(`${address}, Nigeria`);
   const src = `https://www.openstreetmap.org/export/embed.html?bbox=3.0,6.2,3.6,6.7&layer=mapnik&marker=6.45,3.30`;
 
   return (
