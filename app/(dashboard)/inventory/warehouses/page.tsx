@@ -128,7 +128,7 @@ function AddWarehouseModal({
                 {f.label}
               </label>
               <input
-                value={(form as Record<string, string>)[f.key]}
+                value={form[f.key as "name" | "address" | "state" | "city" | "contactPerson" | "phone"]}
                 onChange={update(f.key)}
                 className="kx-input"
               />
