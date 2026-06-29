@@ -163,7 +163,7 @@ export default function SalesDashboardPage() {
                 />
                 <YAxis hide />
                 <Tooltip
-                  formatter={(v: number) => [
+                  formatter={(v) => [
                     `₦${(v / 1000000).toFixed(2)}M`,
                     "Revenue",
                   ]}
@@ -207,7 +207,7 @@ export default function SalesDashboardPage() {
                 />
                 <YAxis hide />
                 <Tooltip
-                  formatter={(v: number) => [v, "Orders"]}
+                  formatter={(v) => [v, "Orders"]}
                   contentStyle={{
                     background: "var(--bg-overlay)",
                     border: "1px solid var(--bd-2)",
