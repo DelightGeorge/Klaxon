@@ -7,6 +7,8 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
 import { tokenStore } from "@/lib/api";
 
+const IS_DEV = process.env.NODE_ENV !== "production";
+
 const DEMO_ACCOUNTS = [
   {
     role: "Super Admin",
@@ -22,16 +24,18 @@ const DEMO_ACCOUNTS = [
 
 export default function LoginPage() {
   const router = useRouter();
-  const setUser = useAuthStore((s) => s.setUser);
 
-  const [email, setEmail] = useState("superadmin@healthcare.com");
-  const [password, setPassword] = useState("Admin@123456");
+  // Don't ship pre-filled admin credentials to production users
+  const [email, setEmail] = useState(IS_DEV ? "superadmin@healthcare.com" : "");
+  const [password, setPassword] = useState(IS_DEV ? "Admin@123456" : "");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (!email.trim() || !password) {
       setError("Please enter your email and password.");
       return;
     }
@@ -47,15 +51,12 @@ export default function LoginPage() {
 
       const { user, accessToken, refreshToken } = res.data;
 
-      // Save tokens
       tokenStore.set(accessToken, refreshToken);
 
-      // Save to store using proper actions
       const store = useAuthStore.getState();
       store.setTokens(accessToken, refreshToken);
       store.setUser(user);
 
-      // Role-based redirect
       const ROLE_MAP: Record<string, string> = {
         SUPER_ADMIN: "/dashboard",
         ORG_ADMIN: "/dashboard",
@@ -79,7 +80,8 @@ export default function LoginPage() {
       const role = user?.roles?.[0] ?? "";
       const destination = ROLE_MAP[role] ?? "/dashboard";
 
-      router.push(destination);
+      // replace, not push — so "back" from the dashboard doesn't return to login
+      router.replace(destination);
     } catch (err: unknown) {
       setLoading(false);
 
@@ -92,12 +94,14 @@ export default function LoginPage() {
         message?: string;
       };
 
-      console.error(
-        "Login error:",
-        e?.response?.status,
-        e?.response?.data,
-        e?.message,
-      );
+      if (IS_DEV) {
+        console.error(
+          "Login error:",
+          e?.response?.status,
+          e?.response?.data,
+          e?.message,
+        );
+      }
 
       if (!e.response) {
         if (e.code === "ECONNABORTED") {
@@ -115,7 +119,9 @@ export default function LoginPage() {
       const status = e.response.status;
       const msg = e.response.data?.message;
 
-      if (status === 401) {
+      // 401 and 404 are merged so failed attempts can't be used to
+      // fingerprint which emails have accounts (user enumeration).
+      if (status === 401 || status === 404) {
         setError("Wrong email or password.");
         return;
       }
@@ -123,10 +129,6 @@ export default function LoginPage() {
         setError(
           "Account not verified. Check your email for a verification link.",
         );
-        return;
-      }
-      if (status === 404) {
-        setError("No account found with this email.");
         return;
       }
       if (status === 429) {
@@ -269,82 +271,85 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Demo accounts */}
-          <div
-            style={{
-              marginTop: 40,
-              paddingTop: 20,
-              borderTop: "1px solid var(--bd-1)",
-              position: "relative",
-            }}
-          >
-            <p
+          {/* Demo accounts — dev only */}
+          {IS_DEV && (
+            <div
               style={{
-                fontSize: 11,
-                color: "var(--tx-3)",
-                fontFamily: "'DM Mono',monospace",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: 8,
+                marginTop: 40,
+                paddingTop: 20,
+                borderTop: "1px solid var(--bd-1)",
+                position: "relative",
               }}
             >
-              Demo Accounts — click to fill
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => {
-                    setEmail(acc.email);
-                    setPassword(acc.password);
-                    setError("");
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid var(--bd-1)",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    textAlign: "left",
-                    width: "100%",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "var(--bd-k)";
-                    e.currentTarget.style.background = "var(--k-subtle)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "var(--bd-1)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-                  }}
-                >
-                  <span
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "var(--tx-3)",
+                  fontFamily: "'DM Mono',monospace",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  marginBottom: 8,
+                }}
+              >
+                Demo Accounts — click to fill
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {DEMO_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.email}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      setEmail(acc.email);
+                      setPassword(acc.password);
+                      setError("");
+                    }}
                     style={{
-                      fontSize: 11,
-                      color: "var(--tx-1)",
-                      fontWeight: 600,
-                      fontFamily: "'Syne',sans-serif",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      background: "rgba(255,255,255,0.03)",
+                      border: "1px solid var(--bd-1)",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "var(--bd-k)";
+                      e.currentTarget.style.background = "var(--k-subtle)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "var(--bd-1)";
+                      e.currentTarget.style.background = "rgba(255,255,255,0.03)";
                     }}
                   >
-                    {acc.role}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      color: "var(--tx-3)",
-                      fontFamily: "'DM Mono',monospace",
-                    }}
-                  >
-                    {acc.email}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "var(--tx-1)",
+                        fontWeight: 600,
+                        fontFamily: "'Syne',sans-serif",
+                      }}
+                    >
+                      {acc.role}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        color: "var(--tx-3)",
+                        fontFamily: "'DM Mono',monospace",
+                      }}
+                    >
+                      {acc.email}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* ── Right panel ────────────────────────────── */}
@@ -376,6 +381,8 @@ export default function LoginPage() {
           {/* Error */}
           {error && (
             <div
+              role="alert"
+              aria-live="assertive"
               style={{
                 padding: "12px 14px",
                 borderRadius: 10,
@@ -391,69 +398,18 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Email */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-              marginBottom: 14,
-            }}
-          >
-            <label
-              style={{
-                fontSize: 11,
-                fontFamily: "'DM Mono',monospace",
-                color: "var(--tx-3)",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
-              Email
-            </label>
-            <div style={{ position: "relative" }}>
-              <Mail
-                style={{
-                  position: "absolute",
-                  left: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 14,
-                  height: 14,
-                  color: "var(--tx-3)",
-                  pointerEvents: "none",
-                }}
-              />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="kx-input"
-                style={{ paddingLeft: 32 }}
-                placeholder="you@example.com"
-                autoComplete="email"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-              marginBottom: 6,
-            }}
-          >
+          <form onSubmit={handleLogin} noValidate>
+            {/* Email */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                flexDirection: "column",
+                gap: 5,
+                marginBottom: 14,
               }}
             >
               <label
+                htmlFor="login-email"
                 style={{
                   fontSize: 11,
                   fontFamily: "'DM Mono',monospace",
@@ -462,106 +418,167 @@ export default function LoginPage() {
                   letterSpacing: "0.06em",
                 }}
               >
-                Password
+                Email
               </label>
-              <a
-                href="/forgot-password"
-                style={{
-                  fontSize: 11,
-                  color: "var(--tx-3)",
-                  textDecoration: "none",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--k)")}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "var(--tx-3)")
-                }
-              >
-                Forgot password?
-              </a>
-            </div>
-            <div style={{ position: "relative" }}>
-              <Lock
-                style={{
-                  position: "absolute",
-                  left: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: 14,
-                  height: 14,
-                  color: "var(--tx-3)",
-                  pointerEvents: "none",
-                }}
-              />
-              <input
-                type={showPwd ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="kx-input"
-                style={{ paddingLeft: 32, paddingRight: 36 }}
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPwd((v) => !v)}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--tx-3)",
-                  display: "flex",
-                  alignItems: "center",
-                  padding: 0,
-                }}
-              >
-                {showPwd ? (
-                  <EyeOff style={{ width: 14, height: 14 }} />
-                ) : (
-                  <Eye style={{ width: 14, height: 14 }} />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Button */}
-          <button
-            type="button"
-            onClick={handleLogin}
-            disabled={loading}
-            className="btn-primary btn-lg"
-            style={{
-              marginTop: 16,
-              justifyContent: "center",
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
-            {loading ? (
-              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span
+              <div style={{ position: "relative" }}>
+                <Mail
                   style={{
+                    position: "absolute",
+                    left: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     width: 14,
                     height: 14,
-                    borderRadius: "50%",
-                    border: "2px solid rgba(7,8,10,0.3)",
-                    borderTopColor: "#07080a",
-                    animation: "spin 0.6s linear infinite",
-                    display: "inline-block",
+                    color: "var(--tx-3)",
+                    pointerEvents: "none",
                   }}
                 />
-                Signing in...
-              </span>
-            ) : (
-              <>
-                <span>Sign in</span>
-                <ArrowRight style={{ width: 16, height: 16 }} />
-              </>
-            )}
-          </button>
+                <input
+                  id="login-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="kx-input"
+                  style={{ paddingLeft: 32 }}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  autoFocus
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+                marginBottom: 6,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <label
+                  htmlFor="login-password"
+                  style={{
+                    fontSize: 11,
+                    fontFamily: "'DM Mono',monospace",
+                    color: "var(--tx-3)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  Password
+                </label>
+                <a
+                  href="/forgot-password"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--tx-3)",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "var(--k)")}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "var(--tx-3)")
+                  }
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <div style={{ position: "relative" }}>
+                <Lock
+                  style={{
+                    position: "absolute",
+                    left: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 14,
+                    height: 14,
+                    color: "var(--tx-3)",
+                    pointerEvents: "none",
+                  }}
+                />
+                <input
+                  id="login-password"
+                  type={showPwd ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="kx-input"
+                  style={{ paddingLeft: 32, paddingRight: 36 }}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((v) => !v)}
+                  aria-label={showPwd ? "Hide password" : "Show password"}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--tx-3)",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: 0,
+                  }}
+                >
+                  {showPwd ? (
+                    <EyeOff style={{ width: 14, height: 14 }} />
+                  ) : (
+                    <Eye style={{ width: 14, height: 14 }} />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary btn-lg"
+              style={{
+                marginTop: 16,
+                justifyContent: "center",
+                opacity: loading ? 0.7 : 1,
+                width: "100%",
+              }}
+            >
+              {loading ? (
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      border: "2px solid rgba(7,8,10,0.3)",
+                      borderTopColor: "#07080a",
+                      animation: "spin 0.6s linear infinite",
+                      display: "inline-block",
+                    }}
+                  />
+                  Signing in...
+                </span>
+              ) : (
+                <>
+                  <span>Sign in</span>
+                  <ArrowRight style={{ width: 16, height: 16 }} />
+                </>
+              )}
+            </button>
+          </form>
 
           <div
             style={{
