@@ -14,21 +14,6 @@ export interface AuthUser {
   organizationName?: string;
 }
 
-interface AuthState {
-  user: AuthUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-
-  login:    (email: string, password: string) => Promise<string>;
-  register: (data: RegisterData) => Promise<void>;
-  logout:   () => Promise<void>;
-  hydrate:  () => void;
-  hasRole:  (...roles: string[]) => boolean;
-  getDashboard: () => string;
-}
-
 export interface RegisterData {
   email: string;
   firstName: string;
@@ -37,22 +22,23 @@ export interface RegisterData {
   phone?: string;
 }
 
-// Normalizes roles from the API: the backend sometimes returns a join-table
-// shape like [{ role: { name: "ORG_ADMIN" } }] instead of plain strings.
-// Always converts to string[] so the rest of the app can rely on AuthUser.roles
-// being plain strings, matching its declared type.
-function normalizeRoles(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .map((r) => {
-      if (typeof r === "string") return r;
-      if (r && typeof r === "object" && "role" in r) {
-        const name = (r as { role?: { name?: string } }).role?.name;
-        return name ?? null;
-      }
-      return null;
-    })
-    .filter((r): r is string => Boolean(r));
+interface AuthState {
+  user:            AuthUser | null;
+  accessToken:     string | null;
+  refreshToken:    string | null;
+  isAuthenticated: boolean;
+  isLoading:       boolean;
+
+  // Actions
+  setUser:     (user: AuthUser) => void;
+  setTokens:   (access: string, refresh: string) => void;
+  setLoading:  (v: boolean) => void;
+  login:       (email: string, password: string) => Promise<string>;
+  register:    (data: RegisterData) => Promise<void>;
+  logout:      () => Promise<void>;
+  hydrate:     () => void;
+  hasRole:     (...roles: string[]) => boolean;
+  getDashboard:() => string;
 }
 
 // ── Role → dashboard map ─────────────────────────────────────────────────────
@@ -86,6 +72,17 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading:       false,
 
+      // ── Setters ────────────────────────────────────────────────────────────
+      setUser: (user) => set({ user, isAuthenticated: true }),
+
+      setTokens: (access, refresh) => {
+        tokenStore.set(access, refresh);
+        set({ accessToken: access, refreshToken: refresh });
+      },
+
+      setLoading: (v) => set({ isLoading: v }),
+
+      // ── Hydrate tokens from localStorage into memory ────────────────────────
       hydrate: () => {
         const { accessToken, refreshToken } = get();
         if (accessToken && refreshToken) {
@@ -93,38 +90,39 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // ── Login ──────────────────────────────────────────────────────────────
       login: async (email, password) => {
         set({ isLoading: true });
         try {
           const res = await api.post<{
-            message: string;
-            user: AuthUser;
-            accessToken: string;
+            message:      string;
+            user:         AuthUser;
+            accessToken:  string;
             refreshToken: string;
           }>("/auth/login", { email, password });
 
-          const normalizedUser: AuthUser = {
-            ...res.data.user,
-            roles: normalizeRoles(res.data.user.roles),
-          };
+          const { user, accessToken, refreshToken } = res.data;
 
-          tokenStore.set(res.data.accessToken, res.data.refreshToken);
+          tokenStore.set(accessToken, refreshToken);
+
           set({
-            user:            normalizedUser,
-            accessToken:     res.data.accessToken,
-            refreshToken:    res.data.refreshToken,
+            user,
+            accessToken,
+            refreshToken,
             isAuthenticated: true,
             isLoading:       false,
           });
 
-          const role = normalizedUser.roles[0];
-          return role ? (ROLE_DASHBOARD[role] ?? "/dashboard") : "/dashboard";
+          const role = user?.roles?.[0] ?? "";
+          return ROLE_DASHBOARD[role] ?? "/dashboard";
+
         } catch (err) {
           set({ isLoading: false });
           throw err;
         }
       },
 
+      // ── Register ───────────────────────────────────────────────────────────
       register: async (data) => {
         set({ isLoading: true });
         try {
@@ -136,12 +134,20 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // ── Logout ─────────────────────────────────────────────────────────────
       logout: async () => {
         try { await api.post("/auth/logout"); } catch { /* ignore */ }
         tokenStore.clear();
-        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+        set({
+          user:            null,
+          accessToken:     null,
+          refreshToken:    null,
+          isAuthenticated: false,
+          isLoading:       false,
+        });
       },
 
+      // ── Helpers ────────────────────────────────────────────────────────────
       hasRole: (...roles) => {
         const { user } = get();
         if (!user) return false;
@@ -152,7 +158,7 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return "/login";
         const role = user.roles[0];
-        return role ? (ROLE_DASHBOARD[role] ?? "/dashboard") : "/dashboard";
+        return ROLE_DASHBOARD[role] ?? "/dashboard";
       },
     }),
     {
@@ -167,9 +173,10 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Hydrate tokens + register logout callback on app start
+// ── Boot: hydrate tokens + register logout callback ──────────────────────────
 if (typeof window !== "undefined") {
   useAuthStore.getState().hydrate();
+
   setLogoutCallback(() => {
     useAuthStore.getState().logout();
     window.location.href = "/login";
