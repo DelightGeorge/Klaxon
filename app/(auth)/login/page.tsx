@@ -16,17 +16,77 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Please enter your email and password");
+      return;
+    }
     setError("");
     try {
-      const destination = await login(email, password);
+      const destination = await login(email.trim().toLowerCase(), password);
       router.push(destination);
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Invalid email or password.";
-      setError(msg);
+      const axiosErr = err as {
+        response?: {
+          status?: number;
+          data?: { message?: string; error?: string; statusCode?: number };
+        };
+        message?: string;
+        code?: string;
+      };
+
+      const status = axiosErr?.response?.status;
+      const data = axiosErr?.response?.data;
+      const network = axiosErr?.code;
+
+      // Network / CORS / timeout
+      if (!axiosErr.response) {
+        if (network === "ECONNABORTED") {
+          setError(
+            "Request timed out. The server may be starting up — try again in 30 seconds.",
+          );
+          return;
+        }
+        setError("Cannot reach the server. Check your internet connection.");
+        return;
+      }
+
+      // HTTP errors
+      if (status === 401) {
+        setError("Wrong email or password. Double-check and try again.");
+        return;
+      }
+      if (status === 403) {
+        setError(
+          "Account not verified. Check your email for a verification link.",
+        );
+        return;
+      }
+      if (status === 404) {
+        setError("No account found with this email address.");
+        return;
+      }
+      if (status === 429) {
+        setError(
+          "Too many login attempts. Please wait a few minutes and try again.",
+        );
+        return;
+      }
+      if (status === 500) {
+        setError("Server error. Please try again in a moment.");
+        return;
+      }
+
+      // Backend message
+      const msg = data?.message ?? data?.error;
+      if (msg) {
+        setError(Array.isArray(msg) ? msg.join(", ") : String(msg));
+        return;
+      }
+
+      setError(
+        `Login failed (${status ?? "unknown error"}). Please try again.`,
+      );
     }
   };
 
