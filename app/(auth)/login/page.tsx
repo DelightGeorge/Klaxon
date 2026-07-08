@@ -428,7 +428,7 @@ export default function LoginPage() {
             max-width: 440px !important;
           }
           .login-left {
-            display: none !important;
+            display: none !important;x
           }
           .login-right {
             padding: 32px 24px !important;
