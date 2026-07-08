@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
                 Reset your password
               </h1>
               <p style={{ fontSize:13, color:"var(--tx-2)", lineHeight:1.6 }}>
-                Enter your email and we'll send you a link to reset your password.
+                you&apos;ll receive a password reset link shortly.
               </p>
             </div>
 
@@ -109,10 +109,10 @@ export default function ForgotPasswordPage() {
               Check your inbox
             </h2>
             <p style={{ fontSize:13, color:"var(--tx-2)", lineHeight:1.6, marginBottom:6 }}>
-              If an account exists for <strong style={{ color:"var(--tx-1)" }}>{email}</strong>, you'll receive a password reset link shortly.
+              If an account exists for <strong style={{ color:"var(--tx-1)" }}>{email}</strong>, you&apos;ll receive an email with instructions to reset your password.
             </p>
             <p style={{ fontSize:11, color:"var(--tx-3)", marginBottom:24 }}>
-              Check your spam folder if you don't see it within a few minutes.
+              Check your spam folder if you don&apos;t see it within a few minutes.
             </p>
             <a href="/login"
               style={{ display:"inline-flex", alignItems:"center", gap:6, fontSize:12, color:"var(--tx-3)", textDecoration:"none" }}
