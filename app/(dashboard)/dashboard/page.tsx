@@ -1,7 +1,6 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { useApi } from "@/lib/hooks/use-api";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -14,51 +13,33 @@ import {
 import Link from "next/link";
 import { MOCK_SALES, MOCK_INVENTORY_PIE, MOCK_AUDIT } from "@/lib/mock-data";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface InventoryStats {
-  totalProducts:       number;
-  totalQuantity:       number;
-  lowStockCount:       number;
-  expiringSoonCount:   number;
-  totalValue:          number;
-  warehouseCount:      number;
+  totalProducts:     number;
+  totalQuantity:     number;
+  lowStockCount:     number;
+  expiringSoonCount: number;
+  totalValue:        number;
+  warehouseCount:    number;
 }
-
 interface Product {
-  id:       string;
-  name:     string;
-  sku:      string;
-  quantity: number;
-  status:   string;
-  category: string;
+  id: string; name: string; sku: string;
+  quantity: number; status: string; category: string;
 }
-
 interface Transaction {
-  id:            string;
-  type:          string;
-  quantity:      number;
-  createdAt:     string;
-  product?:      { name: string };
-  warehouse?:    { name: string };
-  performedBy?:  { firstName: string; lastName: string };
+  id: string; type: string; quantity: number; createdAt: string;
+  product?: { name: string };
+  warehouse?: { name: string };
+  performedBy?: { firstName: string; lastName: string };
 }
-
 interface Warehouse {
-  id:       string;
-  name:     string;
-  capacity: number;
-  status:   string;
+  id: string; name: string; capacity: number; status: string;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
-  n >= 1_000_000_000
-    ? `₦${(n / 1_000_000_000).toFixed(1)}B`
-    : n >= 1_000_000
-    ? `₦${(n / 1_000_000).toFixed(1)}M`
-    : n >= 1_000
-    ? `₦${(n / 1_000).toFixed(1)}K`
-    : `₦${n}`;
+  n >= 1_000_000_000 ? `₦${(n / 1_000_000_000).toFixed(1)}B`
+  : n >= 1_000_000   ? `₦${(n / 1_000_000).toFixed(1)}M`
+  : n >= 1_000       ? `₦${(n / 1_000).toFixed(1)}K`
+  : `₦${n}`;
 
 const PIE_COLORS = ["#14b88e","#3b82f6","#f59e0b","#a855f7","#f43f5e","#22c55e"];
 
@@ -76,10 +57,7 @@ const CustomTooltip = ({ active, payload, label }: {
   );
 };
 
-// ── KPI Card ─────────────────────────────────────────────────────────────────
-function KpiCard({
-  label, value, sub, icon, color = "var(--k)", change, loading,
-}: {
+function KpiCard({ label, value, sub, icon, color = "var(--k)", change, loading }: {
   label: string; value: string | number; sub?: string;
   icon: React.ReactNode; color?: string; change?: number; loading?: boolean;
 }) {
@@ -116,44 +94,34 @@ function KpiCard({
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const user = useAuthStore(s => s.user);
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<InventoryStats>({
-    queryKey: ["inventory-stats"],
-    queryFn:  () => api.get("/inventory/stats").then(r => r.data),
-  });
+  const { data: stats, loading: statsLoading, refetch: refetchStats } =
+    useApi<InventoryStats>("/inventory/stats", null);
 
-  const { data: productsData, isLoading: productsLoading } = useQuery<{ products: Product[]; total: number }>({
-    queryKey: ["products-recent"],
-    queryFn:  () => api.get("/inventory/products", { params: { limit: 5, page: 1 } }).then(r => r.data),
-  });
+  const { data: productsData, loading: productsLoading } =
+    useApi<{ products: Product[]; total: number }>("/inventory/products?limit=5&page=1", null);
 
-  const { data: txData, isLoading: txLoading } = useQuery<{ transactions: Transaction[] }>({
-    queryKey: ["transactions-recent"],
-    queryFn:  () => api.get("/inventory/transactions", { params: { limit: 6 } }).then(r => r.data),
-  });
+  const { data: txData, loading: txLoading } =
+    useApi<{ transactions: Transaction[] }>("/inventory/transactions?limit=6", null);
 
-  const { data: warehousesData } = useQuery<{ warehouses: Warehouse[] }>({
-    queryKey: ["warehouses"],
-    queryFn:  () => api.get("/warehouses", { params: { limit: 10 } }).then(r => r.data),
-  });
+  const { data: warehousesData } =
+    useApi<{ warehouses: Warehouse[] }>("/warehouses?limit=10", null);
 
   const products   = productsData?.products   ?? [];
   const txList     = txData?.transactions      ?? [];
   const warehouses = warehousesData?.warehouses ?? [];
 
   const txTypeColor = (type: string) => {
-    if (type.includes("IN")   || type === "RETURN")     return "var(--k)";
-    if (type.includes("OUT")  || type === "DISPOSAL")   return "var(--red)";
-    if (type.includes("TRANSFER"))                       return "#3b82f6";
+    if (type.includes("IN")  || type === "RETURN")   return "var(--k)";
+    if (type.includes("OUT") || type === "DISPOSAL")  return "var(--red)";
+    if (type.includes("TRANSFER"))                     return "#3b82f6";
     return "var(--amber)";
   };
 
   return (
     <div>
-      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:24, flexWrap:"wrap", gap:12 }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -174,74 +142,21 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── KPI Row 1 ─────────────────────────────────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:12 }}>
-        <KpiCard
-          label="Inventory Value"
-          value={stats ? fmt(stats.totalValue) : "—"}
-          icon={<Package className="w-4 h-4" />}
-          loading={statsLoading}
-        />
-        <KpiCard
-          label="Total Products"
-          value={stats?.totalProducts?.toLocaleString() ?? "—"}
-          icon={<ShoppingCart className="w-4 h-4" />}
-          color="#3b82f6"
-          loading={statsLoading}
-        />
-        <KpiCard
-          label="Total Stock Units"
-          value={stats?.totalQuantity?.toLocaleString() ?? "—"}
-          icon={<TrendingUp className="w-4 h-4" />}
-          color="#a855f7"
-          loading={statsLoading}
-        />
-        <KpiCard
-          label="Warehouses"
-          value={stats?.warehouseCount ?? warehouses.length}
-          icon={<Truck className="w-4 h-4" />}
-          color="#22c55e"
-          loading={statsLoading}
-        />
+        <KpiCard label="Inventory Value"   value={stats ? fmt(stats.totalValue) : "—"}                    icon={<Package className="w-4 h-4" />}   loading={statsLoading} />
+        <KpiCard label="Total Products"    value={stats?.totalProducts?.toLocaleString() ?? "—"}           icon={<ShoppingCart className="w-4 h-4" />} color="#3b82f6" loading={statsLoading} />
+        <KpiCard label="Total Stock Units" value={stats?.totalQuantity?.toLocaleString() ?? "—"}           icon={<TrendingUp className="w-4 h-4" />}   color="#a855f7" loading={statsLoading} />
+        <KpiCard label="Warehouses"        value={stats?.warehouseCount ?? warehouses.length}              icon={<Truck className="w-4 h-4" />}         color="#22c55e" loading={statsLoading} />
       </div>
 
-      {/* ── KPI Row 2 ─────────────────────────────────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
-        <KpiCard
-          label="Low Stock Alerts"
-          value={stats?.lowStockCount ?? "—"}
-          sub="Needs reorder"
-          icon={<AlertTriangle className="w-4 h-4" />}
-          color="#f43f5e"
-          loading={statsLoading}
-        />
-        <KpiCard
-          label="Expiring Soon (30d)"
-          value={stats?.expiringSoonCount ?? "—"}
-          sub="Within 30 days"
-          icon={<Clock className="w-4 h-4" />}
-          color="#f59e0b"
-          loading={statsLoading}
-        />
-        <KpiCard
-          label="Active PPMVs"
-          value="12,830"
-          icon={<Store className="w-4 h-4" />}
-          color="#14b88e"
-          change={19.3}
-        />
-        <KpiCard
-          label="Deliveries (MTD)"
-          value="98,210"
-          icon={<BarChart2 className="w-4 h-4" />}
-          color="#3b82f6"
-          change={22.1}
-        />
+        <KpiCard label="Low Stock Alerts"    value={stats?.lowStockCount ?? "—"}      sub="Needs reorder"   icon={<AlertTriangle className="w-4 h-4" />} color="#f43f5e" loading={statsLoading} />
+        <KpiCard label="Expiring Soon (30d)" value={stats?.expiringSoonCount ?? "—"}  sub="Within 30 days"  icon={<Clock className="w-4 h-4" />}         color="#f59e0b" loading={statsLoading} />
+        <KpiCard label="Active PPMVs"        value="12,830"                            icon={<Store className="w-4 h-4" />}         color="#14b88e" change={19.3} />
+        <KpiCard label="Deliveries (MTD)"    value="98,210"                            icon={<BarChart2 className="w-4 h-4" />}     color="#3b82f6" change={22.1} />
       </div>
 
-      {/* ── Charts row ─────────────────────────────────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:16, marginBottom:20 }}>
-        {/* Revenue trend — static until analytics endpoint available */}
         <div className="card">
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
             <div>
@@ -266,16 +181,13 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Inventory mix */}
         <div className="card">
           <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:"var(--tx-1)", marginBottom:4 }}>Inventory Mix</p>
           <p style={{ fontSize:11, color:"var(--tx-3)", marginBottom:12 }}>By category (%)</p>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Pie data={MOCK_INVENTORY_PIE} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
-                {MOCK_INVENTORY_PIE.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
+                {MOCK_INVENTORY_PIE.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
               </Pie>
               <Legend iconType="circle" iconSize={7}
                 formatter={v => <span style={{ fontSize:10, color:"var(--tx-2)" }}>{v}</span>} />
@@ -284,60 +196,31 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Bottom tables ──────────────────────────────────────────────── */}
       <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16 }}>
-
-        {/* Recent products from real API */}
         <div className="card" style={{ padding:0 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid var(--bd-1)" }}>
-            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>
-              Recent Products
-            </p>
+            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>Recent Products</p>
             <Link href="/inventory/products" style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:"var(--k)", textDecoration:"none" }}>
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {productsLoading ? (
             <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8 }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="skeleton" style={{ height:40, borderRadius:8 }} />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton" style={{ height:40, borderRadius:8 }} />)}
             </div>
           ) : products.length === 0 ? (
-            <div style={{ padding:"40px 0", textAlign:"center", color:"var(--tx-3)", fontSize:13 }}>
-              No products yet
-            </div>
+            <div style={{ padding:"40px 0", textAlign:"center", color:"var(--tx-3)", fontSize:13 }}>No products yet</div>
           ) : (
             <table className="kx-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>SKU</th>
-                  <th>Qty</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Status</th></tr></thead>
               <tbody>
                 {products.map(p => (
                   <tr key={p.id}>
+                    <td><div><p style={{ fontWeight:600, fontSize:12 }}>{p.name}</p><p style={{ fontSize:10, color:"var(--tx-3)", marginTop:1 }}>{p.category}</p></div></td>
+                    <td><span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--tx-3)" }}>{p.sku}</span></td>
+                    <td><span style={{ fontFamily:"'DM Mono',monospace", fontWeight:600 }}>{p.quantity?.toLocaleString()}</span></td>
                     <td>
-                      <div>
-                        <p style={{ fontWeight:600, fontSize:12 }}>{p.name}</p>
-                        <p style={{ fontSize:10, color:"var(--tx-3)", marginTop:1 }}>{p.category}</p>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontSize:11, color:"var(--tx-3)" }}>{p.sku}</span>
-                    </td>
-                    <td>
-                      <span style={{ fontFamily:"'DM Mono',monospace", fontWeight:600 }}>{p.quantity?.toLocaleString()}</span>
-                    </td>
-                    <td>
-                      <span className={`badge ${
-                        p.status === "ACTIVE"        ? "badge-green" :
-                        p.status === "LOW_STOCK"     ? "badge-amber" :
-                        p.status === "OUT_OF_STOCK"  ? "badge-red"   : "badge-ink"
-                      }`}>
+                      <span className={`badge ${p.status === "ACTIVE" ? "badge-green" : p.status === "LOW_STOCK" ? "badge-amber" : p.status === "OUT_OF_STOCK" ? "badge-red" : "badge-ink"}`}>
                         {p.status?.replace(/_/g, " ")}
                       </span>
                     </td>
@@ -348,24 +231,18 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Activity feed from real transactions */}
         <div className="card" style={{ padding:0 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid var(--bd-1)" }}>
-            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>
-              Activity Feed
-            </p>
+            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>Activity Feed</p>
             <Link href="/compliance/audit" style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color:"var(--k)", textDecoration:"none" }}>
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {txLoading ? (
             <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8 }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="skeleton" style={{ height:52, borderRadius:8 }} />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton" style={{ height:52, borderRadius:8 }} />)}
             </div>
           ) : txList.length === 0 ? (
-            /* Fall back to mock audit logs if no transactions yet */
             <div style={{ display:"flex", flexDirection:"column" }}>
               {MOCK_AUDIT.slice(0, 6).map((log, i) => (
                 <div key={log.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"11px 16px", borderBottom: i < 5 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
@@ -374,9 +251,7 @@ export default function DashboardPage() {
                     <p style={{ fontSize:12, fontWeight:500, color:"var(--tx-1)" }}>{log.action}</p>
                     <p style={{ fontSize:11, color:"var(--tx-3)", marginTop:1 }}>{log.user} · {log.resource}</p>
                   </div>
-                  <span style={{ fontSize:10, color:"var(--tx-3)", fontFamily:"'DM Mono',monospace", flexShrink:0 }}>
-                    {log.time.split(",")[1]?.trim()}
-                  </span>
+                  <span style={{ fontSize:10, color:"var(--tx-3)", fontFamily:"'DM Mono',monospace", flexShrink:0 }}>{log.time.split(",")[1]?.trim()}</span>
                 </div>
               ))}
             </div>
@@ -386,13 +261,8 @@ export default function DashboardPage() {
                 <div key={tx.id} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"11px 16px", borderBottom: i < txList.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
                   <div style={{ width:6, height:6, borderRadius:"50%", background: txTypeColor(tx.type), marginTop:5, flexShrink:0, boxShadow:`0 0 6px ${txTypeColor(tx.type)}` }} />
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ fontSize:12, fontWeight:500, color:"var(--tx-1)" }}>
-                      {tx.type.replace(/_/g, " ")} — {tx.product?.name ?? "Unknown product"}
-                    </p>
-                    <p style={{ fontSize:11, color:"var(--tx-3)", marginTop:1 }}>
-                      Qty: {tx.quantity} · {tx.warehouse?.name ?? ""}
-                      {tx.performedBy ? ` · ${tx.performedBy.firstName} ${tx.performedBy.lastName}` : ""}
-                    </p>
+                    <p style={{ fontSize:12, fontWeight:500, color:"var(--tx-1)" }}>{tx.type.replace(/_/g, " ")} — {tx.product?.name ?? "Unknown product"}</p>
+                    <p style={{ fontSize:11, color:"var(--tx-3)", marginTop:1 }}>Qty: {tx.quantity} · {tx.warehouse?.name ?? ""}{tx.performedBy ? ` · ${tx.performedBy.firstName} ${tx.performedBy.lastName}` : ""}</p>
                   </div>
                   <span style={{ fontSize:10, color:"var(--tx-3)", fontFamily:"'DM Mono',monospace", flexShrink:0 }}>
                     {new Date(tx.createdAt).toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" })}
@@ -404,16 +274,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Warehouse capacity (real data) ─────────────────────────────── */}
       {warehouses.length > 0 && (
         <div className="card" style={{ marginTop:16 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:"var(--tx-1)" }}>
-              Warehouse Capacity
-            </p>
-            <Link href="/inventory/warehouses" style={{ fontSize:11, color:"var(--k)", textDecoration:"none" }}>
-              Manage warehouses →
-            </Link>
+            <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:"var(--tx-1)" }}>Warehouse Capacity</p>
+            <Link href="/inventory/warehouses" style={{ fontSize:11, color:"var(--k)", textDecoration:"none" }}>Manage warehouses →</Link>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
             {warehouses.slice(0, 4).map(w => {
