@@ -98,16 +98,16 @@ export default function DashboardPage() {
   const user = useAuthStore(s => s.user);
 
   const { data: stats, loading: statsLoading, refetch: refetchStats } =
-    useApi<InventoryStats>("/inventory/stats", null);
+    useApi<InventoryStats | null>("/inventory/stats", null);
 
   const { data: productsData, loading: productsLoading } =
-    useApi<{ products: Product[]; total: number }>("/inventory/products?limit=5&page=1", null);
+    useApi<{ products: Product[]; total: number }>("/inventory/products?limit=5&page=1", { products: [], total: 0 });
 
   const { data: txData, loading: txLoading } =
-    useApi<{ transactions: Transaction[] }>("/inventory/transactions?limit=6", null);
+    useApi<{ transactions: Transaction[] }>("/inventory/transactions?limit=6", { transactions: [] });
 
   const { data: warehousesData } =
-    useApi<{ warehouses: Warehouse[] }>("/warehouses?limit=10", null);
+    useApi<{ warehouses: Warehouse[] }>("/warehouses?limit=10", { warehouses: [] });
 
   const products   = productsData?.products   ?? [];
   const txList     = txData?.transactions      ?? [];

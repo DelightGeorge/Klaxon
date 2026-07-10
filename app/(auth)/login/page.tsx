@@ -25,7 +25,6 @@ const DEMO_ACCOUNTS = [
 export default function LoginPage() {
   const router = useRouter();
 
-  // Don't ship pre-filled admin credentials to production users
   const [email, setEmail] = useState(IS_DEV ? "superadmin@healthcare.com" : "");
   const [password, setPassword] = useState(IS_DEV ? "Admin@123456" : "");
   const [showPwd, setShowPwd] = useState(false);
@@ -80,7 +79,6 @@ export default function LoginPage() {
       const role = user?.roles?.[0] ?? "";
       const destination = ROLE_MAP[role] ?? "/dashboard";
 
-      // replace, not push — so "back" from the dashboard doesn't return to login
       router.replace(destination);
     } catch (err: unknown) {
       setLoading(false);
@@ -119,8 +117,6 @@ export default function LoginPage() {
       const status = e.response.status;
       const msg = e.response.data?.message;
 
-      // 401 and 404 are merged so failed attempts can't be used to
-      // fingerprint which emails have accounts (user enumeration).
       if (status === 401 || status === 404) {
         setError("Wrong email or password.");
         return;
@@ -175,7 +171,6 @@ export default function LoginPage() {
           boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
         }}
       >
-        {/* ── Left panel ─────────────────────────────── */}
         <div
           style={{
             background: "linear-gradient(135deg, #0d1a15 0%, #07080a 100%)",
@@ -271,7 +266,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Demo accounts — dev only */}
           {IS_DEV && (
             <div
               style={{
@@ -352,7 +346,6 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* ── Right panel ────────────────────────────── */}
         <div
           style={{
             background: "var(--bg-surface)",
@@ -378,7 +371,6 @@ export default function LoginPage() {
             Access your Klaxon dashboard
           </p>
 
-          {/* Error */}
           {error && (
             <div
               role="alert"
@@ -399,7 +391,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleLogin} noValidate>
-            {/* Email */}
             <div
               style={{
                 display: "flex",
@@ -449,7 +440,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div
               style={{
                 display: "flex",
@@ -544,7 +534,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Button */}
             <button
               type="submit"
               disabled={loading}
