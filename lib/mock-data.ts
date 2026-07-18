@@ -133,3 +133,20 @@ export const MOCK_RFQ = Array.from({length:10},(_,i)=>({
   date: new Date(Date.now()-i*2*86400000).toLocaleDateString("en-GB"),
   deadline: new Date(Date.now()+(7-i)*86400000).toLocaleDateString("en-GB"),
 }));
+export interface PartnerOrg {
+  id: string;
+  name: string;
+  type: string;
+  city: string;
+  verified?: boolean;
+  pharmacyCount?: number;
+}
+
+export const MOCK_ORGANIZATIONS: PartnerOrg[] = [
+  { id:"org-1", name:"MedPlus Pharmacy", type:"Pharmacy", city:"Lagos", verified:true, pharmacyCount:12 },
+  { id:"org-2", name:"HealthPlus Group", type:"Pharmacy Chain", city:"Abuja", verified:true, pharmacyCount:28 },
+  { id:"org-3", name:"Reliance PPMV", type:"PPMV", city:"Ibadan", verified:true },
+  { id:"org-4", name:"Emzor Distributors", type:"Distributor", city:"Lagos", verified:true, pharmacyCount:6 },
+  { id:"org-5", name:"Greenlife Pharmacy", type:"Pharmacy", city:"Port Harcourt", verified:false },
+  { id:"org-6", name:"PPMV Direct Kano", type:"PPMV", city:"Kano", verified:true },
+];
