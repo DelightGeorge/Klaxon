@@ -999,7 +999,7 @@ export default function ShopPage() {
             gap: 12,
           }}
         >
-          
+          <a
             href="/dashboard"
             style={{
               display: "flex",
