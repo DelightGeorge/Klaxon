@@ -81,7 +81,7 @@ export default function SuppliersPage() {
               <button onClick={()=>setShowAdd(false)} style={{background:"none",border:"none",cursor:"pointer",color:"var(--tx-3)"}}><X style={{width:18,height:18}}/></button>
             </div>
             <form onSubmit={handleCreate} style={{display:"flex",flexDirection:"column",gap:12}}>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <div className="kx-grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
                 {([
                   {label:"Company Name",key:"name",required:true},
                   {label:"Contact Person",key:"contactPerson"},

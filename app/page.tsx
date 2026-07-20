@@ -1,6 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { Eye, EyeOff, ArrowRight, Lock, Mail, Store, User } from "lucide-react";
 import { KlaxonMark } from "@/components/layout/klaxon-mark";
 import { api } from "@/lib/api";
@@ -16,8 +16,9 @@ const PORTAL_ROLES: Record<string, string> = {
   DELIVERY_AGENT:"/fulfillment/tracking",
 };
 
-export default function PortalLoginPage() {
+function PortalLoginPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [portalType, setPortalType] = useState<PortalType>("ppmv");
   const [tab, setTab]       = useState<"login" | "register">("login");
   const [email, setEmail]   = useState("");
@@ -26,6 +27,20 @@ export default function PortalLoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error,   setError]     = useState("");
   const [success, setSuccess]   = useState("");
+
+  // Deep-link support, e.g. /?portal=customer&tab=register from the shop's
+  // sign-in / create-account links.
+  useEffect(() => {
+    const portalParam = searchParams.get("portal");
+    const tabParam = searchParams.get("tab");
+    if (portalParam === "customer" || portalParam === "ppmv") {
+      setPortalType(portalParam);
+    }
+    if (tabParam === "login" || tabParam === "register") {
+      setTab(tabParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Register fields
   const [firstName, setFirstName] = useState("");
@@ -253,5 +268,13 @@ export default function PortalLoginPage() {
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
+  );
+}
+
+export default function PortalLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <PortalLoginPageInner />
+    </Suspense>
   );
 }

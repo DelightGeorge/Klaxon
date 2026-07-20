@@ -32,7 +32,8 @@ interface Transaction {
   performedBy?: { firstName: string; lastName: string };
 }
 interface Warehouse {
-  id: string; name: string; capacity: number; status: string;
+  id: string; name: string; type: string;
+  isActive?: boolean; _count?: { stock: number };
 }
 
 const fmt = (n: number) =>
@@ -106,12 +107,11 @@ export default function DashboardPage() {
   const { data: txData, loading: txLoading } =
     useApi<{ transactions: Transaction[] }>("/inventory/transactions?limit=6", { transactions: [] });
 
-  const { data: warehousesData } =
-    useApi<{ warehouses: Warehouse[] }>("/warehouses?limit=10", { warehouses: [] });
+  const { data: warehouses } =
+    useApi<Warehouse[]>("/inventory/warehouses", []);
 
   const products   = productsData?.products   ?? [];
   const txList     = txData?.transactions      ?? [];
-  const warehouses = warehousesData?.warehouses ?? [];
 
   const txTypeColor = (type: string) => {
     if (type.includes("IN")  || type === "RETURN")   return "var(--k)";
@@ -142,21 +142,21 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:12 }}>
+      <div className="kx-grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:12 }}>
         <KpiCard label="Inventory Value"   value={stats ? fmt(stats.totalValue) : "—"}                    icon={<Package className="w-4 h-4" />}   loading={statsLoading} />
         <KpiCard label="Total Products"    value={stats?.totalProducts?.toLocaleString() ?? "—"}           icon={<ShoppingCart className="w-4 h-4" />} color="#3b82f6" loading={statsLoading} />
         <KpiCard label="Total Stock Units" value={stats?.totalQuantity?.toLocaleString() ?? "—"}           icon={<TrendingUp className="w-4 h-4" />}   color="#a855f7" loading={statsLoading} />
         <KpiCard label="Warehouses"        value={stats?.warehouseCount ?? warehouses.length}              icon={<Truck className="w-4 h-4" />}         color="#22c55e" loading={statsLoading} />
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+      <div className="kx-grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
         <KpiCard label="Low Stock Alerts"    value={stats?.lowStockCount ?? "—"}      sub="Needs reorder"   icon={<AlertTriangle className="w-4 h-4" />} color="#f43f5e" loading={statsLoading} />
         <KpiCard label="Expiring Soon (30d)" value={stats?.expiringSoonCount ?? "—"}  sub="Within 30 days"  icon={<Clock className="w-4 h-4" />}         color="#f59e0b" loading={statsLoading} />
         <KpiCard label="Active PPMVs"        value="12,830"                            icon={<Store className="w-4 h-4" />}         color="#14b88e" change={19.3} />
         <KpiCard label="Deliveries (MTD)"    value="98,210"                            icon={<BarChart2 className="w-4 h-4" />}     color="#3b82f6" change={22.1} />
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:16, marginBottom:20 }}>
+      <div className="kx-stack-mobile" style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:16, marginBottom:20 }}>
         <div className="card">
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
             <div>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16 }}>
+      <div className="kx-stack-mobile" style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16 }}>
         <div className="card" style={{ padding:0 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 16px", borderBottom:"1px solid var(--bd-1)" }}>
             <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, color:"var(--tx-1)" }}>Recent Products</p>
@@ -280,22 +280,21 @@ export default function DashboardPage() {
             <p style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:"var(--tx-1)" }}>Warehouse Capacity</p>
             <Link href="/inventory/warehouses" style={{ fontSize:11, color:"var(--k)", textDecoration:"none" }}>Manage warehouses →</Link>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
-            {warehouses.slice(0, 4).map(w => {
-              const pct = w.capacity ?? 0;
-              return (
-                <div key={w.id} style={{ padding:"12px 14px", borderRadius:10, background:"var(--bg-raised)", border:"1px solid var(--bd-1)" }}>
-                  <p style={{ fontWeight:600, fontSize:12, color:"var(--tx-1)", marginBottom:8, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{w.name}</p>
-                  <div style={{ height:5, background:"var(--bg-overlay)", borderRadius:99, overflow:"hidden", marginBottom:5 }}>
-                    <div style={{ height:"100%", width:`${Math.min(pct, 100)}%`, background: pct > 80 ? "var(--amber)" : "var(--k)", borderRadius:99 }} />
-                  </div>
-                  <div style={{ display:"flex", justifyContent:"space-between" }}>
-                    <span style={{ fontSize:10, color:"var(--tx-3)" }}>{w.status}</span>
-                    <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color: pct > 80 ? "var(--amber)" : "var(--k)" }}>{pct}%</span>
-                  </div>
+          <div className="kx-grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12 }}>
+            {warehouses.slice(0, 4).map(w => (
+              <div key={w.id} style={{ padding:"12px 14px", borderRadius:10, background:"var(--bg-raised)", border:"1px solid var(--bd-1)" }}>
+                <p style={{ fontWeight:600, fontSize:12, color:"var(--tx-1)", marginBottom:6, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{w.name}</p>
+                <p style={{ fontSize:10, color:"var(--tx-3)", marginBottom:8 }}>{w.type?.replace(/_/g, " ")}</p>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span className={`badge ${w.isActive === false ? "badge-ink" : "badge-green"}`} style={{ fontSize:10 }}>
+                    {w.isActive === false ? "Inactive" : "Active"}
+                  </span>
+                  <span style={{ fontSize:10, fontFamily:"'DM Mono',monospace", color:"var(--tx-3)" }}>
+                    {(w._count?.stock ?? 0).toLocaleString()} items
+                  </span>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       )}

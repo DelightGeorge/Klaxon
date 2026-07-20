@@ -30,7 +30,7 @@ function ReviewModal({ app, onClose, onSuccess }: { app: OrgApplication; onClose
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--tx-3)" }}><X style={{ width: 18, height: 18 }} /></button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20, padding: 16, borderRadius: 12, background: "var(--bg-raised)", border: "1px solid var(--bd-1)" }}>
+        <div className="kx-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20, padding: 16, borderRadius: 12, background: "var(--bg-raised)", border: "1px solid var(--bd-1)" }}>
           {[
             { label: "Contact", value: app.contactPerson },
             { label: "Email", value: app.email },
@@ -152,7 +152,7 @@ export default function AdminOrgsPage() {
       />
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
+      <div className="kx-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
         {[
           { label: "Total Orgs", value: organizations.length, color: "var(--k)" },
           { label: "Active", value: organizations.filter(o => o.status === "ACTIVE").length, color: "#22c55e" },

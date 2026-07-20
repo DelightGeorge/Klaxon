@@ -6,7 +6,7 @@ export default function LabelsPage() {
     <div>
       <PageHeader title="Label Printing" subtitle="Design and print product labels with barcodes"
         action={<><button className="btn-secondary btn-sm"><Download className="w-3.5 h-3.5"/>Download PDF</button><button className="btn-primary btn-sm"><Printer className="w-3.5 h-3.5"/>Print Labels</button></>} />
-      <div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:20}}>
+      <div className="kx-stack-mobile" style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:20}}>
         <div className="card">
           <p style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:13,marginBottom:14}}>Label Options</p>
           {["Label Size","Code Type","Copies","Include Logo","Include Price"].map(f => (

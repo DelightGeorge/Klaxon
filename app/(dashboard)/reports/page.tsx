@@ -15,7 +15,7 @@ export default function ReportsPage() {
   return (
     <div>
       <PageHeader title="Reports" subtitle="Generate and download platform reports" />
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+      <div className="kx-grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
         {REPORTS.map(r => (
           <div key={r.title} className="card" style={{cursor:"pointer",transition:"all 0.2s"}}
             onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--bd-k)";e.currentTarget.style.transform="translateY(-2px)";}}

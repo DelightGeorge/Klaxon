@@ -37,6 +37,7 @@ import {
   type CartItem as StoreCartItem,
 } from "@/lib/cart-store";
 import { MOCK_ORGANIZATIONS, type PartnerOrg } from "@/lib/mock-data";
+import { useAuthStore, ROLE_DASHBOARD } from "@/lib/auth-store";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Drug {
@@ -365,6 +366,12 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ShopPage() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const authUser = useAuthStore((s) => s.user);
+  const staffRole = authUser?.roles?.[0];
+  const isStaffUser = isAuthenticated && !!staffRole && staffRole !== "PATIENT" && staffRole in ROLE_DASHBOARD;
+  const homeTabHref = isStaffUser ? (ROLE_DASHBOARD[staffRole!] ?? "/dashboard") : "/shop";
+
   const [drugs, setDrugs] = useState<Drug[]>(MOCK_DRUGS);
   const [initialLoading, setInitialLoading] = useState(true); // only true on first mount
   const [search, setSearch] = useState("");
@@ -1000,7 +1007,7 @@ export default function ShopPage() {
           }}
         >
           <a
-            href="/dashboard"
+            href="/shop"
             style={{
               display: "flex",
               alignItems: "center",
@@ -1020,6 +1027,7 @@ export default function ShopPage() {
               flexShrink: 0,
               fontFamily: "'DM Mono',monospace",
             }}
+            className="shop-topbar-label"
           >
             Medicine Shop
           </span>
@@ -2564,7 +2572,7 @@ export default function ShopPage() {
               id: "home",
               icon: <Home style={{ width: 18, height: 18 }} />,
               label: "Home",
-              href: "/dashboard",
+              href: homeTabHref,
             },
             {
               id: "shop",

@@ -28,11 +28,13 @@ interface AuthState {
   refreshToken:    string | null;
   isAuthenticated: boolean;
   isLoading:       boolean;
+  hasHydrated:     boolean;
 
   // Actions
   setUser:     (user: AuthUser) => void;
   setTokens:   (access: string, refresh: string) => void;
   setLoading:  (v: boolean) => void;
+  setHasHydrated: (v: boolean) => void;
   login:       (email: string, password: string) => Promise<string>;
   register:    (data: RegisterData) => Promise<void>;
   logout:      () => Promise<void>;
@@ -71,6 +73,7 @@ export const useAuthStore = create<AuthState>()(
       refreshToken:    null,
       isAuthenticated: false,
       isLoading:       false,
+      hasHydrated:     false,
 
       // ── Setters ────────────────────────────────────────────────────────────
       setUser: (user) => set({ user, isAuthenticated: true }),
@@ -81,8 +84,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setLoading: (v) => set({ isLoading: v }),
+      setHasHydrated: (v) => set({ hasHydrated: v }),
 
-      // ── Hydrate tokens from localStorage into memory ────────────────────────
+      // Manual fallback: safe to call any time, e.g. right before firing an
+      // API request, in case onRehydrateStorage hasn't run yet for some
+      // reason (e.g. localStorage unavailable at first tick).
       hydrate: () => {
         const { accessToken, refreshToken } = get();
         if (accessToken && refreshToken) {
@@ -169,14 +175,25 @@ export const useAuthStore = create<AuthState>()(
         refreshToken:    s.refreshToken,
         isAuthenticated: s.isAuthenticated,
       }),
+      // This fires once the persisted state has actually finished loading
+      // from localStorage (rehydration is async), which is the only
+      // reliable point to copy tokens into the in-memory tokenStore used by
+      // the axios interceptor. Calling this synchronously at module load
+      // (the old approach) could run before rehydration completed and read
+      // stale nulls, causing every request right after a reload to go out
+      // with no Authorization header.
+      onRehydrateStorage: () => (state) => {
+        if (state?.accessToken && state?.refreshToken) {
+          tokenStore.set(state.accessToken, state.refreshToken);
+        }
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
 
-// ── Boot: hydrate tokens + register logout callback ──────────────────────────
+// ── Boot: register logout callback ────────────────────────────────────────
 if (typeof window !== "undefined") {
-  useAuthStore.getState().hydrate();
-
   setLogoutCallback(() => {
     useAuthStore.getState().logout();
     window.location.href = "/login";

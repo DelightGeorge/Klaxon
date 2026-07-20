@@ -8,7 +8,7 @@ export default function FulfillmentDashboardPage() {
   return (
     <div>
       <PageHeader title="Fulfillment" subtitle="Order fulfillment and delivery operations" />
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+      <div className="kx-grid-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
         <KpiCard label="Total Delivered" value={MOCK_KPI.delivered.toLocaleString()} change={MOCK_KPI.deliveredChange} icon={<CheckCircle2 className="w-4 h-4"/>} color="#22c55e" />
         <KpiCard label="Active Orders" value={MOCK_KPI.activeOrders.toLocaleString()} change={MOCK_KPI.ordersChange} icon={<Truck className="w-4 h-4"/>} />
         <KpiCard label="Pending Dispatch" value="284" icon={<Clock className="w-4 h-4"/>} color="#f59e0b" />

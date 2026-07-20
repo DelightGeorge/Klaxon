@@ -68,7 +68,7 @@ export default function SettingsPage() {
       {tab==="profile" && (
         <div className="card" style={{maxWidth:480}}>
           <h3 style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:15,color:"var(--tx-1)",marginBottom:16}}>Profile Information</h3>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+          <div className="kx-grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
             {[
               {label:"First Name",value:user?.firstName??"—"},
               {label:"Last Name",value:user?.lastName??"—"},
