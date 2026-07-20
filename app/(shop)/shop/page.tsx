@@ -26,8 +26,16 @@ import {
   ChevronLeft,
   Eye,
   Zap,
+  User,
+  LogOut,
+  PackageCheck,
+  MapPinned,
+  CreditCard,
+  MessageSquareText,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { KlaxonMark } from "@/components/layout/klaxon-mark";
 import { api } from "@/lib/api";
 import {
@@ -37,6 +45,10 @@ import {
   type CartItem as StoreCartItem,
 } from "@/lib/cart-store";
 import { MOCK_ORGANIZATIONS, type PartnerOrg } from "@/lib/mock-data";
+import { useAuthStore } from "@/lib/auth-store";
+import { useWishlistStore } from "@/lib/wishlist-store";
+import { useProductReviews, useSubmitReview, type Review } from "@/lib/hooks/use-reviews";
+import { productStock, stockLabel } from "@/lib/stock";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Drug {
@@ -365,6 +377,12 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ShopPage() {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const logout = useAuthStore((s) => s.logout);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+
   const [drugs, setDrugs] = useState<Drug[]>(MOCK_DRUGS);
   const [initialLoading, setInitialLoading] = useState(true); // only true on first mount
   const [search, setSearch] = useState("");
@@ -375,7 +393,9 @@ export default function ShopPage() {
   const storeAddItem = useCartStore((s) => s.addItem);
   const storeUpdateQty = useCartStore((s) => s.updateQty);
   const storeClear = useCartStore((s) => s.clear);
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const wishlist = useWishlistStore((s) => s.ids);
+  const toggleWishlistStore = useWishlistStore((s) => s.toggle);
+  const syncWishlist = useWishlistStore((s) => s.syncFromServer);
   const [showCart, setShowCart] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [selected, setSelected] = useState<Drug | null>(null);
@@ -479,9 +499,11 @@ export default function ShopPage() {
   };
 
   const toggleWishlist = (id: string) => {
-    setWishlist((w) =>
-      w.includes(id) ? w.filter((x) => x !== id) : [...w, id],
-    );
+    if (!isAuthenticated) {
+      router.push("/login?next=/");
+      return;
+    }
+    toggleWishlistStore(id);
   };
 
   const total = cartTotal(cart);
@@ -1066,9 +1088,43 @@ export default function ShopPage() {
             )}
           </div>
 
+          {/* Wishlist link */}
+          <Link
+            href="/wishlist"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontSize: 12,
+              color: "var(--tx-3)",
+              textDecoration: "none",
+              flexShrink: 0,
+              padding: "8px 4px",
+              position: "relative",
+            }}
+          >
+            <Heart style={{ width: 14, height: 14 }} />
+            <span style={{ display: "none" }} className="cart-label">
+              Wishlist
+            </span>
+            {wishlist.length > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  right: -2,
+                  width: 7,
+                  height: 7,
+                  borderRadius: 99,
+                  background: "var(--k)",
+                }}
+              />
+            )}
+          </Link>
+
           {/* Orders link */}
           <Link
-            href="/shop/orders"
+            href="/orders"
             style={{
               display: "flex",
               alignItems: "center",
@@ -1085,6 +1141,172 @@ export default function ShopPage() {
               Orders
             </span>
           </Link>
+
+          {/* Account menu */}
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <button
+              onClick={() => setShowAccountMenu((v) => !v)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                background: showAccountMenu ? "var(--bg-overlay)" : "transparent",
+                border: "1px solid var(--bd-1)",
+                borderRadius: 10,
+                padding: "6px 10px",
+                cursor: "pointer",
+                color: "var(--tx-1)",
+              }}
+            >
+              {isAuthenticated ? (
+                <>
+                  <span
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 99,
+                      background: "var(--k-subtle)",
+                      border: "1px solid var(--bd-k)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: "var(--k)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {(user?.firstName?.[0] ?? "").toUpperCase()}
+                    {(user?.lastName?.[0] ?? "").toUpperCase()}
+                  </span>
+                  <span
+                    style={{ fontSize: 12, display: "none" }}
+                    className="cart-label"
+                  >
+                    {user?.firstName ?? "Account"}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <User style={{ width: 14, height: 14, color: "var(--tx-3)" }} />
+                  <span style={{ fontSize: 12, fontWeight: 600 }}>Sign in</span>
+                </>
+              )}
+              <ChevronDown
+                style={{
+                  width: 12,
+                  height: 12,
+                  color: "var(--tx-3)",
+                  transform: showAccountMenu ? "rotate(180deg)" : "none",
+                  transition: "transform 0.15s",
+                }}
+              />
+            </button>
+
+            {showAccountMenu && (
+              <>
+                <div
+                  onClick={() => setShowAccountMenu(false)}
+                  style={{ position: "fixed", inset: 0, zIndex: 299 }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    width: 220,
+                    background: "var(--bg-raised)",
+                    border: "1px solid var(--bd-1)",
+                    borderRadius: 12,
+                    boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
+                    zIndex: 300,
+                    overflow: "hidden",
+                  }}
+                >
+                  {isAuthenticated ? (
+                    <>
+                      <div
+                        style={{
+                          padding: "12px 14px",
+                          borderBottom: "1px solid var(--bd-1)",
+                        }}
+                      >
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "var(--tx-1)" }}>
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p style={{ fontSize: 11, color: "var(--tx-3)" }}>{user?.email}</p>
+                      </div>
+                      {[
+                        { icon: PackageCheck, label: "My Orders", href: "/orders" },
+                        { icon: Heart, label: "Wishlist", href: "/wishlist" },
+                        { icon: MapPinned, label: "Addresses & Payment", href: "/addresses" },
+                      ].map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          onClick={() => setShowAccountMenu(false)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: "10px 14px",
+                            fontSize: 13,
+                            color: "var(--tx-2)",
+                            textDecoration: "none",
+                          }}
+                        >
+                          <item.icon style={{ width: 14, height: 14 }} />
+                          {item.label}
+                        </Link>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setShowAccountMenu(false);
+                          logout();
+                        }}
+                        style={{
+                          width: "100%",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 14px",
+                          fontSize: 13,
+                          color: "#f87171",
+                          background: "none",
+                          border: "none",
+                          borderTop: "1px solid var(--bd-1)",
+                          cursor: "pointer",
+                          textAlign: "left",
+                        }}
+                      >
+                        <LogOut style={{ width: 14, height: 14 }} />
+                        Sign out
+                      </button>
+                    </>
+                  ) : (
+                    <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                      <Link
+                        href="/login?next=/"
+                        onClick={() => setShowAccountMenu(false)}
+                        className="btn-primary btn-sm"
+                        style={{ justifyContent: "center" }}
+                      >
+                        Sign in
+                      </Link>
+                      <Link
+                        href="/register?next=/"
+                        onClick={() => setShowAccountMenu(false)}
+                        className="btn-secondary btn-sm"
+                        style={{ justifyContent: "center" }}
+                      >
+                        Create account
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Cart button */}
           <button
@@ -1137,6 +1359,7 @@ export default function ShopPage() {
           </button>
         </div>
       </div>
+
 
       {/* ── Main content ── */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 16px" }}>
@@ -1271,7 +1494,7 @@ export default function ShopPage() {
               <p style={{ fontSize: 11, color: "var(--tx-2)" }}>
                 You&apos;ll receive a confirmation shortly.{" "}
                 <Link
-                  href="/shop/orders"
+                  href="/orders"
                   style={{
                     color: "var(--k)",
                     fontWeight: 600,
@@ -2150,7 +2373,7 @@ export default function ShopPage() {
                 </p>
                 {cart.length > 0 && (
                   <Link
-                    href="/shop/checkout"
+                    href="/checkout"
                     style={{
                       display: "block",
                       textAlign: "center",
