@@ -11,7 +11,7 @@ export default function TelehealthDashboardPage() {
   return (
     <div>
       <PageHeader title="Telehealth" subtitle="E-prescriptions and pharmacy routing" />
-      <div className="kx-grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:24}}>
         <KpiCard label="Total Prescriptions" value={MOCK_PRESCRIPTIONS.length} icon={<FileText className="w-4 h-4"/>} />
         <KpiCard label="Pending Routing" value={pending.length} icon={<Pill className="w-4 h-4"/>} color="#f59e0b" />
         <KpiCard label="Dispensed Today" value="42" icon={<Video className="w-4 h-4"/>} color="#22c55e" />

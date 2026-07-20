@@ -11,21 +11,14 @@ import {
 import { KlaxonMark } from "./klaxon-mark";
 import { useAuthStore } from "@/lib/auth-store";
 
-// Roles as used by ROLE_DASHBOARD in lib/auth-store.ts — the vocabulary
-// that actually drives real post-login redirects today. (This file
-// previously used a different, unrelated role vocabulary — MANUFACTURER,
-// PHARMACY_ADMIN, PPMV_OPERATOR, etc. — that didn't match any role the
-// login flow ever produces, so almost every nav section below was
-// invisible to every real account except SUPER_ADMIN/ORG_ADMIN. The
-// section→role assignments below are a best-effort mapping onto the real
-// vocabulary; double check them against your backend's actual permission
-// rules if any team ends up seeing sections they shouldn't, or missing
-// ones they need.)
+// Roles exactly as defined by the backend (see API reference doc).
+// SUPER_ADMIN and ORG_ADMIN are treated as "see everything" below,
+// independent of this list, since they're platform/org-wide admins.
 type Role =
-  | "SUPER_ADMIN" | "ORG_ADMIN" | "DOCTOR" | "NURSE" | "RECEPTIONIST"
-  | "PHARMACIST" | "LAB_TECHNICIAN" | "RADIOLOGIST" | "BILLING_OFFICER"
-  | "INSURANCE_OFFICER" | "HR_MANAGER" | "INVENTORY_MANAGER" | "PATIENT"
-  | "DISTRIBUTOR_ADMIN" | "WAREHOUSE_MANAGER" | "DELIVERY_AGENT" | "PPMV_OWNER";
+  | "SUPER_ADMIN" | "ORG_ADMIN" | "MANUFACTURER" | "DISTRIBUTOR"
+  | "WAREHOUSE_MANAGER" | "PHARMACY_ADMIN" | "HOSPITAL_PHARMACIST"
+  | "PPMV_OPERATOR" | "TELEHEALTH_PROVIDER" | "LOGISTICS_COORDINATOR"
+  | "AUDITOR";
 
 interface NavItem {
   icon: React.ComponentType<{ style?: React.CSSProperties }>;
@@ -48,7 +41,7 @@ const NAV: NavItem[] = [
 
   {
     icon: Package, label: "Inventory",
-    roles: ["WAREHOUSE_MANAGER", "INVENTORY_MANAGER", "DISTRIBUTOR_ADMIN", "PHARMACIST"],
+    roles: ["WAREHOUSE_MANAGER", "MANUFACTURER", "DISTRIBUTOR", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
     children: [
       { label: "Products",       href: "/inventory/products" },
       { label: "Batches",        href: "/inventory/batches" },
@@ -59,7 +52,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: QrCode, label: "GTIN & Barcode",
-    roles: ["WAREHOUSE_MANAGER", "INVENTORY_MANAGER"],
+    roles: ["MANUFACTURER", "WAREHOUSE_MANAGER", "AUDITOR"],
     children: [
       { label: "GTIN Manager",  href: "/gtin/manager" },
       { label: "Generator",     href: "/gtin/generator" },
@@ -69,7 +62,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: ClipboardList, label: "Procurement",
-    roles: ["DISTRIBUTOR_ADMIN", "PHARMACIST", "WAREHOUSE_MANAGER", "INVENTORY_MANAGER"],
+    roles: ["DISTRIBUTOR", "PHARMACY_ADMIN", "WAREHOUSE_MANAGER", "MANUFACTURER"],
     children: [
       { label: "Dashboard",  href: "/procurement/dashboard" },
       { label: "Suppliers",  href: "/procurement/suppliers" },
@@ -80,7 +73,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Truck, label: "Fulfillment",
-    roles: ["DISTRIBUTOR_ADMIN", "WAREHOUSE_MANAGER", "DELIVERY_AGENT"],
+    roles: ["DISTRIBUTOR", "WAREHOUSE_MANAGER", "LOGISTICS_COORDINATOR"],
     children: [
       { label: "Dashboard", href: "/fulfillment/dashboard" },
       { label: "Orders",    href: "/fulfillment/orders" },
@@ -90,7 +83,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: TrendingUp, label: "Sales",
-    roles: ["DISTRIBUTOR_ADMIN", "PHARMACIST", "INVENTORY_MANAGER", "BILLING_OFFICER"],
+    roles: ["DISTRIBUTOR", "PHARMACY_ADMIN", "MANUFACTURER", "AUDITOR"],
     children: [
       { label: "Dashboard", href: "/sales/dashboard" },
       { label: "Products",  href: "/sales/products" },
@@ -101,7 +94,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Stethoscope, label: "Telehealth",
-    roles: ["DOCTOR", "NURSE", "PHARMACIST", "RADIOLOGIST", "LAB_TECHNICIAN"],
+    roles: ["TELEHEALTH_PROVIDER", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
     children: [
       { label: "Dashboard",      href: "/telehealth/dashboard" },
       { label: "Prescriptions",  href: "/telehealth/prescriptions" },
@@ -110,7 +103,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Store, label: "PPMV Portal",
-    roles: ["PPMV_OWNER", "DISTRIBUTOR_ADMIN"],
+    roles: ["PPMV_OPERATOR", "DISTRIBUTOR"],
     children: [
       { label: "Dashboard",  href: "/ppmv/dashboard" },
       { label: "Inventory",  href: "/ppmv/inventory" },
@@ -119,7 +112,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: ShieldCheck, label: "Compliance",
-    roles: [], // No real "auditor" role exists in ROLE_DASHBOARD today — visible only to SUPER_ADMIN/ORG_ADMIN via the always-visible rule until a compliance-specific role exists.
+    roles: ["AUDITOR", "MANUFACTURER"],
     children: [
       { label: "Dashboard",     href: "/compliance/dashboard" },
       { label: "Audit Logs",    href: "/compliance/audit" },
@@ -127,7 +120,7 @@ const NAV: NavItem[] = [
       { label: "Traceability",  href: "/compliance/traceability" },
     ],
   },
-  { icon: BarChart2, label: "Reports", href: "/reports", roles: ["DISTRIBUTOR_ADMIN", "PHARMACIST", "INVENTORY_MANAGER", "BILLING_OFFICER"] },
+  { icon: BarChart2, label: "Reports", href: "/reports", roles: ["AUDITOR", "DISTRIBUTOR", "PHARMACY_ADMIN", "MANUFACTURER"] },
   {
     icon: Code2, label: "API & Integrations",
     roles: [], // platform-admin only — SUPER_ADMIN/ORG_ADMIN see it via the always-visible rule, no operational role needs it
@@ -139,7 +132,7 @@ const NAV: NavItem[] = [
   },
   {
     icon: Users, label: "Admin",
-    roles: ["HR_MANAGER"], // HR_MANAGER manages users; SUPER_ADMIN/ORG_ADMIN also see this via the always-visible rule
+    roles: [], // platform-admin only — same as above
     children: [
       { label: "Users",          href: "/admin/users" },
       { label: "Roles",          href: "/admin/roles" },
@@ -150,7 +143,7 @@ const NAV: NavItem[] = [
   {
     icon: ShoppingBag, label: "Medicine Shop",
     href: "/shop", badge: "NEW",
-    roles: ["PPMV_OWNER", "PHARMACIST", "DISTRIBUTOR_ADMIN", "PATIENT"],
+    roles: ["PPMV_OPERATOR", "PHARMACY_ADMIN", "HOSPITAL_PHARMACIST"],
   },
 ];
 

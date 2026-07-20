@@ -28,7 +28,7 @@ export default function PPMVDashboardPage() {
     <div>
       <PageHeader title="PPMV Portal" subtitle="Local medicine vendor management and support"
         action={<button className="btn-primary btn-sm">+ Register PPMV</button>} />
-      <div className="kx-grid-3" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:24}}>
         <KpiCard label="Total PPMVs" value={MOCK_KPI.ppMVs.toLocaleString()} change={MOCK_KPI.ppMVsChange} icon={<Store className="w-4 h-4"/>} />
         <KpiCard label="Active Today" value="9,240" icon={<Package className="w-4 h-4"/>} color="#3b82f6" />
         <KpiCard label="Low Stock" value={MOCK_KPI.lowStock} icon={<MapPin className="w-4 h-4"/>} color="#f59e0b" />

@@ -51,7 +51,7 @@ export default function TransfersPage() {
         badgeVariant="green"
       />
 
-      <div className="kx-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         <div className="card">
           <p
             style={{

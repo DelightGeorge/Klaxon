@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
-import { AuthGuard } from "@/components/layout/auth-guard";
 import { X } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -14,8 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   return (
-    <AuthGuard>
-      <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg-root)" }}>
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg-root)" }}>
 
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -82,7 +80,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           main { padding: 16px !important; }
         }
       `}</style>
-      </div>
-    </AuthGuard>
+    </div>
   );
 }

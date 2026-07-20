@@ -22,7 +22,7 @@ export default function ProcurementDashboardPage() {
     <div>
       <PageHeader title="Procurement" subtitle="Supplier management and purchase workflow"
         action={<button className="btn-primary btn-sm">+ New RFQ</button>} />
-      <div className="kx-grid-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
         <KpiCard label="Active RFQs" value="24" icon={<FileText className="w-4 h-4"/>} />
         <KpiCard label="Open POs" value="18" icon={<ShoppingCart className="w-4 h-4"/>} color="#3b82f6" />
         <KpiCard label="Awaiting Approval" value="7" icon={<Clock className="w-4 h-4"/>} color="#f59e0b" />

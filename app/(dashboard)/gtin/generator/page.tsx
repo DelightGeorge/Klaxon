@@ -11,12 +11,12 @@ export default function GeneratorPage() {
   return (
     <div>
       <PageHeader title="Barcode Generator" subtitle="Generate QR codes, barcodes and DataMatrix for drug packaging" />
-      <div className="kx-grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,maxWidth:900}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,maxWidth:900}}>
         <div className="card" style={{display:"flex",flexDirection:"column",gap:16}}>
           <p style={{fontFamily:"'Syne',sans-serif",fontWeight:700,fontSize:14}}>Configuration</p>
           <div style={{display:"flex",flexDirection:"column",gap:5}}>
             <label style={{fontSize:11,fontFamily:"'DM Mono',monospace",color:"var(--tx-3)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Code Type</label>
-            <div className="kx-grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
               {types.map(t => (
                 <button key={t} onClick={() => setType(t)}
                   style={{padding:"8px 10px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:"1px solid",transition:"all 0.15s",

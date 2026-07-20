@@ -123,21 +123,3 @@
   .text-2 { color:var(--tx-2); }
   .text-3 { color:var(--tx-3); }
 }
-/* ── Responsive grid helpers ──────────────────────────────────────────────
-   Dashboard pages build KPI/card grids with inline styles
-   (gridTemplateColumns: "repeat(4,1fr)"), which media queries in a
-   stylesheet normally can't touch. These classes are meant to be added
-   alongside those inline styles so pages can opt into mobile collapsing
-   without every page needing its own <style> block. */
-@media (max-width: 1024px) {
-  .kx-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
-  .kx-grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
-}
-@media (max-width: 640px) {
-  .kx-grid-4,
-  .kx-grid-3,
-  .kx-grid-2 { grid-template-columns: 1fr !important; }
-}
-@media (max-width: 900px) {
-  .kx-stack-mobile { grid-template-columns: 1fr !important; }
-}

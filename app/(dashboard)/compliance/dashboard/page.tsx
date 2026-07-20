@@ -11,7 +11,7 @@ export default function ComplianceDashboardPage() {
   return (
     <div>
       <PageHeader title="Compliance" subtitle="Regulatory compliance and audit monitoring" />
-      <div className="kx-grid-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
         <KpiCard label="Compliance Score" value="98.4%" icon={<ShieldCheck className="w-4 h-4"/>} color="#22c55e" />
         <KpiCard label="Critical Events" value={critical.length} icon={<AlertTriangle className="w-4 h-4"/>} color="#f43f5e" />
         <KpiCard label="Warnings" value={warnings.length} icon={<AlertTriangle className="w-4 h-4"/>} color="#f59e0b" />

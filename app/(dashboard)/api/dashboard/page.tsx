@@ -4,7 +4,7 @@ import { KpiCard } from "@/components/ui/kpi-card";
 import { Code2, Zap, AlertTriangle, CheckCircle2 } from "lucide-react";
 export default function APIDashboardPage() {
   return (<div><PageHeader badge="DEMO" badgeVariant="demo" title="API Dashboard" subtitle="Monitor API usage and integrations"/>
-    <div className="kx-grid-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
       <KpiCard label="API Calls (24h)" value="142,840" icon={<Zap className="w-4 h-4"/>}/>
       <KpiCard label="Success Rate" value="99.8%" icon={<CheckCircle2 className="w-4 h-4"/>} color="#22c55e"/>
       <KpiCard label="Avg Latency" value="124ms" icon={<Code2 className="w-4 h-4"/>} color="#3b82f6"/>
