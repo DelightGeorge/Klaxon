@@ -382,7 +382,7 @@ export default function ShopPage() {
   const [ordering, setOrdering] = useState(false);
   const [ordered, setOrdered] = useState(false);
   const [address, setAddress] = useState("");
-  const [mobileTab, setMobileTab] = useState
+  const [mobileTab, setMobileTab] = useState<
     "home" | "shop" | "cart" | "profile"
   >("shop");
   const [rxOnly, setRxOnly] = useState<boolean | null>(null);
